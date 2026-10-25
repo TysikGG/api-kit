@@ -47,3 +47,11 @@ Virtual phone numbers and SMS verification across hundreds of global services.
   - [API Reference](sv-number/js/README.md)
 - [Python Guide & Examples](sv-number/python.md)
   - [API Reference](sv-number/python/sv_number.md)
+
+### 📬 SMSBulk
+Virtual phone numbers, disposable email addresses, and OTP verification across global services.
+
+- [JavaScript Guide & Examples](smsbulk/js.md)
+  - [API Reference](smsbulk/js/README.md)
+- [Python Guide & Examples](smsbulk/python.md)
+  - [API Reference](smsbulk/python/smsbulk.md)

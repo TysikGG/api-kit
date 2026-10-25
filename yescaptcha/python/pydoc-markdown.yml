@@ -1,9 +1,13 @@
 loaders:
   - type: python
     search_path: [src]
-    modules: [yescaptcha]
-
+processors:
+  - type: filter
+    documented_only: true
+    skip_empty_modules: true
+  - type: smart
+  - type: crossref
 renderer:
   type: markdown
   filename: ../../docs/yescaptcha/python/yescaptcha.md
-  render_toc: false
+  render_module_header: true
