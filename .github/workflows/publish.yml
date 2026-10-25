@@ -39,18 +39,45 @@ jobs:
           sha = os.environ["HEAD_SHA"]
           zero = "0" * 40
 
+          def commit_exists(rev: str) -> bool:
+              if not rev or rev == zero:
+                  return False
+              return subprocess.run(
+                  ["git", "cat-file", "-e", f"{rev}^{{commit}}"],
+                  capture_output=True,
+              ).returncode == 0
+
+          def files_from_history(rev: str) -> list[str]:
+              commits = subprocess.check_output(
+                  ["git", "rev-list", rev], text=True
+              ).splitlines()
+              names: list[str] = []
+              for commit in commits:
+                  names.extend(
+                      subprocess.check_output(
+                          [
+                              "git",
+                              "diff-tree",
+                              "--no-commit-id",
+                              "--name-only",
+                              "-r",
+                              "--root",
+                              commit,
+                          ],
+                          text=True,
+                      ).splitlines()
+                  )
+              return names
+
           if event == "workflow_dispatch":
               files = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
-          elif not before or before == zero:
+          elif commit_exists(before):
               files = subprocess.check_output(
-                  ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", sha],
-                  text=True,
+                  ["git", "diff", "--name-only", before, sha], text=True
               ).splitlines()
           else:
-              files = subprocess.check_output(
-                  ["git", "diff", "--name-only", before, sha],
-                  text=True,
-              ).splitlines()
+              print(f"Previous commit {before or '(empty)'} is not in this clone.")
+              files = files_from_history(sha)
 
           npm = set()
           pypi = set()
@@ -129,6 +156,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -164,6 +192,9 @@ jobs:
 
           if [ "$CODE" != "200" ]; then
             echo "Publishing version $CURRENT_VERSION to PyPI..."
+            if [ -z "${UV_PUBLISH_TOKEN}" ]; then
+              unset UV_PUBLISH_TOKEN
+            fi
             uv publish
           else
             echo "Version $CURRENT_VERSION is already published on PyPI. Skipping publish."
