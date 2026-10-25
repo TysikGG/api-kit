@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/
+.pnpm-store/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+*.egg-info/
+.eggs/
+wheels/
+
+# Tests and coverage
+coverage/
+.nyc_output/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# GitBook / HonKit
+_book/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

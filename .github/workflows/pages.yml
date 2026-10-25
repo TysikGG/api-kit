@@ -1,0 +1,69 @@
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "*/*/src/**"
+      - "*/*/typedoc.json"
+      - "*/*/pyproject.toml"
+      - "*/*/pydoc-markdown.yml"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate API reference
+        run: |
+          set -eu
+          shopt -s nullglob
+          for cfg in */js/typedoc.json; do
+            dir=$(dirname "$cfg")
+            npm ci --prefix "$dir"
+            npm --prefix "$dir" run docs
+          done
+          for cfg in */python/pydoc-markdown.yml; do
+            dir=$(dirname "$cfg")
+            python -m pip install --upgrade pip
+            python -m pip install "$dir" pydoc-markdown
+            (cd "$dir" && pydoc-markdown)
+          done
+
+      - name: Build GitBook
+        run: npx --yes honkit build docs _book
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _book
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
