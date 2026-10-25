@@ -1,0 +1,9 @@
+loaders:
+  - type: python
+    search_path: [src]
+    modules: [peak]
+
+renderer:
+  type: markdown
+  filename: ../../docs/peak/python/peak.md
+  render_toc: false

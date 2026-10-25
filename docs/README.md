@@ -23,3 +23,11 @@ Cryptocurrency exchange and instant swaps: market data, quotes, order management
   - [API Reference](bitcoinvn/js/README.md)
 - [Python Guide & Examples](bitcoinvn/python.md)
   - [API Reference](bitcoinvn/python/bitcoinvn.md)
+
+### 🏔️ Peak
+Cloudflare Turnstile and 5-second challenge (WAF / Under Attack Mode) solver API.
+
+- [JavaScript Guide & Examples](peak/js.md)
+  - [API Reference](peak/js/README.md)
+- [Python Guide & Examples](peak/python.md)
+  - [API Reference](peak/python/peak.md)

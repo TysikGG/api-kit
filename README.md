@@ -14,6 +14,7 @@ Monorepo of production-ready, fully typed, independent API client libraries for 
 | :--- | :--- | :--- | :--- |
 | **Grizzly SMS** | Disposable virtual numbers, SMS OTP verification, pricing catalogs, and partner push forwarding | [![npm](https://img.shields.io/npm/v/grizzly-sms.svg?label=npm)](https://www.npmjs.com/package/grizzly-sms)<br>[Documentation & Examples](grizzly-sms/js) | [![PyPI](https://img.shields.io/pypi/v/grizzly-sms-client.svg?label=PyPI)](https://pypi.org/project/grizzly-sms-client/)<br>[Documentation & Examples](grizzly-sms/python) |
 | **BitcoinVN** | Vietnam's cryptocurrency exchange & instant swaps: tickers, quotes, orders, balances, and staking | [![npm](https://img.shields.io/npm/v/bitcoinvn.svg?label=npm)](https://www.npmjs.com/package/bitcoinvn)<br>[Documentation & Examples](bitcoinvn/js) | [![PyPI](https://img.shields.io/pypi/v/bitcoinvn.svg?label=PyPI)](https://pypi.org/project/bitcoinvn/)<br>[Documentation & Examples](bitcoinvn/python) |
+| **Peak** | Cloudflare Turnstile & 5-second challenge (WAF) CAPTCHA solver | [![npm](https://img.shields.io/npm/v/peak-client.svg?label=npm)](https://www.npmjs.com/package/peak-client)<br>[Documentation & Examples](peak/js) | [![PyPI](https://img.shields.io/pypi/v/peak-client.svg?label=PyPI)](https://pypi.org/project/peak-client/)<br>[Documentation & Examples](peak/python) |
 
 ---
 
