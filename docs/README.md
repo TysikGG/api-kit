@@ -31,3 +31,11 @@ Cloudflare Turnstile and 5-second challenge (WAF / Under Attack Mode) solver API
   - [API Reference](peak/js/README.md)
 - [Python Guide & Examples](peak/python.md)
   - [API Reference](peak/python/peak.md)
+
+### 🧩 YesCaptcha
+Captcha recognition API: reCAPTCHA v2/v3/Enterprise, hCaptcha, Turnstile, FunCaptcha, and AWS WAF.
+
+- [JavaScript Guide & Examples](yescaptcha/js.md)
+  - [API Reference](yescaptcha/js/README.md)
+- [Python Guide & Examples](yescaptcha/python.md)
+  - [API Reference](yescaptcha/python/yescaptcha.md)

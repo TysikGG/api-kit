@@ -22,3 +22,10 @@
   * [Reference](peak/js/README.md)
 * [Python](peak/python.md)
   * [Reference](peak/python/peak.md)
+
+## YesCaptcha
+
+* [JavaScript](yescaptcha/js.md)
+  * [Reference](yescaptcha/js/README.md)
+* [Python](yescaptcha/python.md)
+  * [Reference](yescaptcha/python/yescaptcha.md)

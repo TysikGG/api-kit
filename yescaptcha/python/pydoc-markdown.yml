@@ -1,0 +1,9 @@
+loaders:
+  - type: python
+    search_path: [src]
+    modules: [yescaptcha]
+
+renderer:
+  type: markdown
+  filename: ../../docs/yescaptcha/python/yescaptcha.md
+  render_toc: false
