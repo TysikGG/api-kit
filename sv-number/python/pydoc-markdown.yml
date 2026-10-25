@@ -1,0 +1,9 @@
+loaders:
+  - type: python
+    search_path: [src]
+    modules: [sv_number]
+
+renderer:
+  type: markdown
+  filename: ../../docs/sv-number/python/sv_number.md
+  render_toc: false

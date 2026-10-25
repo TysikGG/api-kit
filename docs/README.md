@@ -39,3 +39,11 @@ Captcha recognition API: reCAPTCHA v2/v3/Enterprise, hCaptcha, Turnstile, FunCap
   - [API Reference](yescaptcha/js/README.md)
 - [Python Guide & Examples](yescaptcha/python.md)
   - [API Reference](yescaptcha/python/yescaptcha.md)
+
+### 📱 SV Number
+Virtual phone numbers and SMS verification across hundreds of global services.
+
+- [JavaScript Guide & Examples](sv-number/js.md)
+  - [API Reference](sv-number/js/README.md)
+- [Python Guide & Examples](sv-number/python.md)
+  - [API Reference](sv-number/python/sv_number.md)

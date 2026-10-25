@@ -29,3 +29,10 @@
   * [Reference](yescaptcha/js/README.md)
 * [Python](yescaptcha/python.md)
   * [Reference](yescaptcha/python/yescaptcha.md)
+
+## SV Number
+
+* [JavaScript](sv-number/js.md)
+  * [Reference](sv-number/js/README.md)
+* [Python](sv-number/python.md)
+  * [Reference](sv-number/python/sv_number.md)
