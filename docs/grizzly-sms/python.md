@@ -1,12 +1,12 @@
-# GrizzlySMS — Python
+# Grizzly SMS — Python
 
-Клиент `grizzly-sms` вызывает [активационное API Grizzly SMS](https://grizzlysms.com/docs). Ключ пользователя копируется из настроек профиля на [grizzlysms.com](https://grizzlysms.com) и передаётся в `GRIZZLY_API_KEY`. Партнёрский ключ (`GRIZZLY_PARTNER_KEY`) нужен только для `GrizzlyPartner`.
+The `grizzly-sms` client calls the [Grizzly SMS activation API](https://grizzlysms.com/docs). Copy the user key from the profile on [grizzlysms.com](https://grizzlysms.com) into `GRIZZLY_API_KEY`. The partner key (`GRIZZLY_PARTNER_KEY`) is only needed for `GrizzlyPartner`.
 
 ```sh
-pip install grizzly-sms
+pip install grizzly-sms-client
 ```
 
-Проверка без покупки номера:
+Check the client without buying a number:
 
 ```python
 import os
@@ -25,10 +25,10 @@ if __name__ == "__main__":
     main()
 ```
 
-Исходник: `grizzly-sms/python/examples/check.py`.
+Source: `grizzly-sms/python/examples/check.py`.
 
-`GrizzlyPartner` пушит входящие SMS и звонки. Этот вызов меняет состояние на стороне Grizzly и в пример проверки не входит.
+`GrizzlyPartner` pushes inbound SMS and calls. That call changes state on Grizzly's side and is not part of the check example.
 
-`GET_SERVICES`, `GET_NUMBER` и `FINISH_ACTIVATION` приходят на сервер партнёра. Этот пакет их не отправляет. Описание протокола: [grizzlysms.com/docs/partner](https://grizzlysms.com/docs/partner).
+`GET_SERVICES`, `GET_NUMBER`, and `FINISH_ACTIVATION` arrive on the partner server. This package does not send them. Protocol: [grizzlysms.com/docs/partner](https://grizzlysms.com/docs/partner).
 
-Справочник методов генерируется в [docs/grizzly-sms/python/grizzly_sms.md](grizzly-sms/python/grizzly_sms.md).
+The generated method reference is in [docs/grizzly-sms/python/grizzly_sms.md](grizzly-sms/python/grizzly_sms.md).

@@ -340,8 +340,8 @@ wheels = [
 ]
 
 [[package]]
-name = "grizzly-sms"
-version = "0.1.0"
+name = "grizzly-sms-client"
+version = "0.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },

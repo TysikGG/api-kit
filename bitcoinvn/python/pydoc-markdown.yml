@@ -1,0 +1,13 @@
+loaders:
+  - type: python
+    search_path: [src]
+processors:
+  - type: filter
+    documented_only: true
+    skip_empty_modules: true
+  - type: smart
+  - type: crossref
+renderer:
+  type: markdown
+  filename: ../../docs/bitcoinvn/python/bitcoinvn.md
+  render_module_header: true
