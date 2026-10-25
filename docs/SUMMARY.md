@@ -43,3 +43,10 @@
   * [Reference](smsbulk/js/README.md)
 * [Python](smsbulk/python.md)
   * [Reference](smsbulk/python/smsbulk.md)
+
+## Chaojiying
+
+* [JavaScript](chaojiying/js.md)
+  * [Reference](chaojiying/js/README.md)
+* [Python](chaojiying/python.md)
+  * [Reference](chaojiying/python/chaojiying.md)

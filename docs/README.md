@@ -55,3 +55,11 @@ Virtual phone numbers, disposable email addresses, and OTP verification across g
   - [API Reference](smsbulk/js/README.md)
 - [Python Guide & Examples](smsbulk/python.md)
   - [API Reference](smsbulk/python/smsbulk.md)
+
+### 🦅 Chaojiying
+High-accuracy CAPTCHA image and coordinate recognition API.
+
+- [JavaScript Guide & Examples](chaojiying/js.md)
+  - [API Reference](chaojiying/js/README.md)
+- [Python Guide & Examples](chaojiying/python.md)
+  - [API Reference](chaojiying/python/chaojiying.md)
