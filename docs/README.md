@@ -63,3 +63,11 @@ High-accuracy CAPTCHA image and coordinate recognition API.
   - [API Reference](chaojiying/js/README.md)
 - [Python Guide & Examples](chaojiying/python.md)
   - [API Reference](chaojiying/python/chaojiying.md)
+
+### 🔄 Swapzone
+Cryptocurrency exchange and decentralized (DEX) cross-chain aggregator API.
+
+- [JavaScript Guide & Examples](swapzone/js.md)
+  - [API Reference](swapzone/js/README.md)
+- [Python Guide & Examples](swapzone/python.md)
+  - [API Reference](swapzone/python/swapzone.md)
