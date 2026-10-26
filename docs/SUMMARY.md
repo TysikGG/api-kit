@@ -71,3 +71,11 @@
   * [Reference](stealthex/js/README.md)
 * [Python](stealthex/python.md)
   * [Reference](stealthex/python/stealthex.md)
+
+## SMSBower
+
+* [JavaScript](smsbower/js.md)
+  * [Reference](smsbower/js/README.md)
+* [Python](smsbower/python.md)
+  * [Reference](smsbower/python/smsbower.md)
+

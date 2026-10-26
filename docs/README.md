@@ -87,3 +87,12 @@ Instant, limitless non-custodial cryptocurrency exchange API.
   - [API Reference](stealthex/js/README.md)
 - [Python Guide & Examples](stealthex/python.md)
   - [API Reference](stealthex/python/stealthex.md)
+
+### 🌳 SMSBower
+Temporary virtual phone numbers and SMS verification API.
+
+- [JavaScript Guide & Examples](smsbower/js.md)
+  - [API Reference](smsbower/js/README.md)
+- [Python Guide & Examples](smsbower/python.md)
+  - [API Reference](smsbower/python/smsbower.md)
+
