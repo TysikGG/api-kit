@@ -57,3 +57,10 @@
   * [Reference](swapzone/js/README.md)
 * [Python](swapzone/python.md)
   * [Reference](swapzone/python/swapzone.md)
+
+## SimpleSwap
+
+* [JavaScript](simpleswap/js.md)
+  * [Reference](simpleswap/js/README.md)
+* [Python](simpleswap/python.md)
+  * [Reference](simpleswap/python/simpleswap.md)

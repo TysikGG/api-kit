@@ -71,3 +71,11 @@ Cryptocurrency exchange and decentralized (DEX) cross-chain aggregator API.
   - [API Reference](swapzone/js/README.md)
 - [Python Guide & Examples](swapzone/python.md)
   - [API Reference](swapzone/python/swapzone.md)
+
+### 💱 SimpleSwap
+Non-custodial cryptocurrency and fiat exchange API (v3) with customizable partner rewards.
+
+- [JavaScript Guide & Examples](simpleswap/js.md)
+  - [API Reference](simpleswap/js/README.md)
+- [Python Guide & Examples](simpleswap/python.md)
+  - [API Reference](simpleswap/python/simpleswap.md)
