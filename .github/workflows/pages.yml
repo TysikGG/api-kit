@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _book
+          path: .github/docs/_book
 
   deploy:
     needs: build
