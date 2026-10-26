@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "stealthex-client"
+version = "0.1.0"
+description = "Python client for the StealthEX cryptocurrency exchange API"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "ISC"
+dependencies = [
+  "httpx>=0.27",
+]
+
+[project.urls]
+Repository = "https://github.com/TysikGG/api-kit"
+Documentation = "https://documenter.getpostman.com/view/24333719/2s9YJZ54yN"
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-httpx>=0.30",
+  "ruff>=0.8",
+  "pydoc-markdown>=4.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/stealthex"]
+
+[tool.pytest.ini_options]
+markers = [
+  "live: calls the real StealthEX API and needs STEALTHEX_API_KEY",
+]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

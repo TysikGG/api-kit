@@ -79,3 +79,11 @@ Non-custodial cryptocurrency and fiat exchange API (v3) with customizable partne
   - [API Reference](simpleswap/js/README.md)
 - [Python Guide & Examples](simpleswap/python.md)
   - [API Reference](simpleswap/python/simpleswap.md)
+
+### 🥷 StealthEX
+Instant, limitless non-custodial cryptocurrency exchange API.
+
+- [JavaScript Guide & Examples](stealthex/js.md)
+  - [API Reference](stealthex/js/README.md)
+- [Python Guide & Examples](stealthex/python.md)
+  - [API Reference](stealthex/python/stealthex.md)

@@ -64,3 +64,10 @@
   * [Reference](simpleswap/js/README.md)
 * [Python](simpleswap/python.md)
   * [Reference](simpleswap/python/simpleswap.md)
+
+## StealthEX
+
+* [JavaScript](stealthex/js.md)
+  * [Reference](stealthex/js/README.md)
+* [Python](stealthex/python.md)
+  * [Reference](stealthex/python/stealthex.md)
