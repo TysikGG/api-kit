@@ -1,0 +1,55 @@
+{
+  "name": "fixedfloat-client",
+  "version": "0.1.0",
+  "description": "TypeScript/JavaScript client for the FixedFloat cryptocurrency exchange API v2",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest",
+    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/",
+    "docs": "typedoc --options typedoc.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "fixedfloat",
+    "crypto",
+    "exchange",
+    "swap",
+    "api",
+    "sdk",
+    "typescript"
+  ],
+  "author": "TysikGG",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TysikGG/api-kit.git",
+    "directory": "fixedfloat/js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.2",
+    "axios-mock-adapter": "^2.1.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typedoc": "^0.28.1",
+    "typedoc-plugin-markdown": "^4.6.0",
+    "typescript": "^5.7.2"
+  }
+}

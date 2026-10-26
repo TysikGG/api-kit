@@ -154,6 +154,15 @@
 * [Python SDK](capguru/python.md)
   * [Python API Reference](capguru/python/capguru.md)
 
+## FixedFloat
+
+* [Overview](fixedfloat/index.md)
+* [JavaScript SDK](fixedfloat/js.md)
+  * [JS API Reference](fixedfloat/js/README.md)
+* [Python SDK](fixedfloat/python.md)
+  * [Python API Reference](fixedfloat/python/fixedfloat.md)
+
+
 
 
 
