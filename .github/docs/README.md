@@ -35,6 +35,7 @@ Select any service below to open its dedicated documentation and API reference.
 | **[📲 VAK-SMS](vak-sms/index.md)** | Virtual numbers & SMS OTP receiving with repeat activation | [JavaScript](vak-sms/js.md) · [Python](vak-sms/python.md) |
 | **[✉️ Give-SMS](give-sms/index.md)** | Temporary virtual phone numbers and SMS OTP activation | [JavaScript](give-sms/js.md) · [Python](give-sms/python.md) |
 | **[📱 OnlineSIM](onlinesim/index.md)** | Disposable & rental virtual phone numbers for SMS OTP verification | [JavaScript](onlinesim/js.md) · [Python](onlinesim/python.md) |
+| **[📲 SMS-MAN](sms-man/index.md)** | Global virtual phone numbers and SMS OTP activation API | [JavaScript](sms-man/js.md) · [Python](sms-man/python.md) |
 
 ---
 

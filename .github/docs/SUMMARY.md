@@ -138,6 +138,15 @@
 * [Python SDK](onlinesim/python.md)
   * [Python API Reference](onlinesim/python/onlinesim.md)
 
+## SMS-MAN
+
+* [Overview](sms-man/index.md)
+* [JavaScript SDK](sms-man/js.md)
+  * [JS API Reference](sms-man/js/README.md)
+* [Python SDK](sms-man/python.md)
+  * [Python API Reference](sms-man/python/sms_man.md)
+
+
 
 
 
