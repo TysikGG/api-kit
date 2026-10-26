@@ -1,5 +1,5 @@
 {
-  "name": "simpleswap",
+  "name": "simpleswap-client",
   "version": "0.1.0",
   "description": "TypeScript client for the SimpleSwap cryptocurrency exchange API (v3)",
   "main": "./dist/index.js",

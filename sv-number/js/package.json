@@ -1,5 +1,5 @@
 {
-  "name": "sv-number",
+  "name": "sv-number-client",
   "version": "0.1.0",
   "description": "TypeScript client for the SV Number SMS verification API",
   "main": "./dist/index.js",

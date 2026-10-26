@@ -14,7 +14,7 @@ API Documentation: [https://simpleswap.io/en/affiliate-program/help-center/artic
 ## Installation
 
 ```bash
-npm install simpleswap
+npm install simpleswap-client
 ```
 
 ## Quick Start

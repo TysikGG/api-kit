@@ -1,6 +1,6 @@
 # sv-number
 
-[![npm version](https://img.shields.io/npm/v/sv-number.svg)](https://www.npmjs.com/package/sv-number)
+[![npm version](https://img.shields.io/npm/v/sv-number-client.svg)](https://www.npmjs.com/package/sv-number-client)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/node/v/sv-number.svg)](https://nodejs.org)
 
@@ -23,7 +23,7 @@ Official API documentation: <https://sms-verification-number.com/en/api-sms-acti
 ## Installation
 
 ```bash
-npm install sv-number
+npm install sv-number-client
 ```
 
 Requires Node.js 18 or higher.
