@@ -1,116 +1,46 @@
-# api-kit Documentation
+# ⚡ api-kit Documentation
 
-Independent API client libraries for automation, messaging, and fintech services. Each service provides dedicated packages for **JavaScript / TypeScript** (built with axios) and **Python** (built with HTTPX).
+Production-ready, fully typed, independent API client libraries for automation, messaging, CAPTCHA solving, and cryptocurrency exchange services.
 
-All packages are published separately to npm and PyPI. Method references are automatically generated from source code docstrings and TSDoc comments.
+Each service is an independent package with **zero runtime coupling**:
+- **JavaScript / TypeScript**: Built with Axios, full TypeScript types, TSDoc comments, published to npm.
+- **Python**: Synchronous clients built with HTTPX, Google-style docstrings, type hints, published to PyPI.
 
 ---
 
-## Supported Services
+## 🧭 Service Directory
 
-### 🐻 Grizzly SMS
-Disposable virtual phone numbers, SMS OTP verification, pricing catalogs, and partner push forwarding.
+Select any service below to open its dedicated documentation and API reference.
 
-- [JavaScript Guide & Examples](grizzly-sms/js.md)
-  - [API Reference](grizzly-sms/js/README.md)
-- [Python Guide & Examples](grizzly-sms/python.md)
-  - [API Reference](grizzly-sms/python/grizzly_sms.md)
+### 🛡️ CAPTCHA Recognition & Solvers
 
-### ₿ BitcoinVN
-Cryptocurrency exchange and instant swaps: market data, quotes, order management, account balances, and staking.
+| Service | Description | SDK Documentation |
+| :--- | :--- | :--- |
+| **[🏔️ Peak](peak/index.md)** | Cloudflare Turnstile & 5-second challenge (WAF) solver | [JavaScript](peak/js.md) · [Python](peak/python.md) |
+| **[🧩 YesCaptcha](yescaptcha/index.md)** | Multi-CAPTCHA: reCAPTCHA, hCaptcha, Turnstile, FunCaptcha | [JavaScript](yescaptcha/js.md) · [Python](yescaptcha/python.md) |
+| **[🦅 Chaojiying](chaojiying/index.md)** | Image, text, and click-coordinate CAPTCHA (超级鹰) | [JavaScript](chaojiying/js.md) · [Python](chaojiying/python.md) |
+| **[🤖 SolveCaptcha](solvecaptcha/index.md)** | Human & AI CAPTCHA recognition (Turnstile, Image, Audio) | [JavaScript](solvecaptcha/js.md) · [Python](solvecaptcha/python.md) |
 
-- [JavaScript Guide & Examples](bitcoinvn/js.md)
-  - [API Reference](bitcoinvn/js/README.md)
-- [Python Guide & Examples](bitcoinvn/python.md)
-  - [API Reference](bitcoinvn/python/bitcoinvn.md)
+---
 
-### 🏔️ Peak
-Cloudflare Turnstile and 5-second challenge (WAF / Under Attack Mode) solver API.
+### 📲 SMS & Virtual Numbers
 
-- [JavaScript Guide & Examples](peak/js.md)
-  - [API Reference](peak/js/README.md)
-- [Python Guide & Examples](peak/python.md)
-  - [API Reference](peak/python/peak.md)
+| Service | Description | SDK Documentation |
+| :--- | :--- | :--- |
+| **[🐻 Grizzly SMS](grizzly-sms/index.md)** | Disposable virtual numbers, SMS OTP verification, pricing | [JavaScript](grizzly-sms/js.md) · [Python](grizzly-sms/python.md) |
+| **[📱 SV Number](sv-number/index.md)** | Disposable phone numbers & SMS verification API | [JavaScript](sv-number/js.md) · [Python](sv-number/python.md) |
+| **[📬 SMSBulk](smsbulk/index.md)** | Virtual phone numbers, disposable email addresses, and OTP | [JavaScript](smsbulk/js.md) · [Python](smsbulk/python.md) |
+| **[💌 SMSBower](smsbower/index.md)** | Temporary virtual phone numbers across 200+ countries | [JavaScript](smsbower/js.md) · [Python](smsbower/python.md) |
+| **[📲 VAK-SMS](vak-sms/index.md)** | Virtual numbers & SMS OTP receiving with repeat activation | [JavaScript](vak-sms/js.md) · [Python](vak-sms/python.md) |
 
-### 🧩 YesCaptcha
-Captcha recognition API: reCAPTCHA v2/v3/Enterprise, hCaptcha, Turnstile, FunCaptcha, and AWS WAF.
+---
 
-- [JavaScript Guide & Examples](yescaptcha/js.md)
-  - [API Reference](yescaptcha/js/README.md)
-- [Python Guide & Examples](yescaptcha/python.md)
-  - [API Reference](yescaptcha/python/yescaptcha.md)
+### 🪙 Cryptocurrency & Instant Swaps
 
-### 📱 SV Number
-Virtual phone numbers and SMS verification across hundreds of global services.
-
-- [JavaScript Guide & Examples](sv-number/js.md)
-  - [API Reference](sv-number/js/README.md)
-- [Python Guide & Examples](sv-number/python.md)
-  - [API Reference](sv-number/python/sv_number.md)
-
-### 📬 SMSBulk
-Virtual phone numbers, disposable email addresses, and OTP verification across global services.
-
-- [JavaScript Guide & Examples](smsbulk/js.md)
-  - [API Reference](smsbulk/js/README.md)
-- [Python Guide & Examples](smsbulk/python.md)
-  - [API Reference](smsbulk/python/smsbulk.md)
-
-### 🦅 Chaojiying
-High-accuracy CAPTCHA image and coordinate recognition API.
-
-- [JavaScript Guide & Examples](chaojiying/js.md)
-  - [API Reference](chaojiying/js/README.md)
-- [Python Guide & Examples](chaojiying/python.md)
-  - [API Reference](chaojiying/python/chaojiying.md)
-
-### 🔄 Swapzone
-Cryptocurrency exchange and decentralized (DEX) cross-chain aggregator API.
-
-- [JavaScript Guide & Examples](swapzone/js.md)
-  - [API Reference](swapzone/js/README.md)
-- [Python Guide & Examples](swapzone/python.md)
-  - [API Reference](swapzone/python/swapzone.md)
-
-### 💱 SimpleSwap
-Non-custodial cryptocurrency and fiat exchange API (v3) with customizable partner rewards.
-
-- [JavaScript Guide & Examples](simpleswap/js.md)
-  - [API Reference](simpleswap/js/README.md)
-- [Python Guide & Examples](simpleswap/python.md)
-  - [API Reference](simpleswap/python/simpleswap.md)
-
-### 🥷 StealthEX
-Instant, limitless non-custodial cryptocurrency exchange API.
-
-- [JavaScript Guide & Examples](stealthex/js.md)
-  - [API Reference](stealthex/js/README.md)
-- [Python Guide & Examples](stealthex/python.md)
-  - [API Reference](stealthex/python/stealthex.md)
-
-### 🌳 SMSBower
-Temporary virtual phone numbers and SMS verification API.
-
-- [JavaScript Guide & Examples](smsbower/js.md)
-  - [API Reference](smsbower/js/README.md)
-- [Python Guide & Examples](smsbower/python.md)
-  - [API Reference](smsbower/python/smsbower.md)
-
-### 📲 VAK-SMS
-Virtual phone numbers and SMS OTP receiving service with multi-operator support.
-
-- [JavaScript Guide & Examples](vak-sms/js.md)
-  - [API Reference](vak-sms/js/README.md)
-- [Python Guide & Examples](vak-sms/python.md)
-  - [API Reference](vak-sms/python/vak_sms.md)
-
-### 🧩 SolveCaptcha
-Human-powered and AI CAPTCHA recognition service supporting image captchas, reCAPTCHA, and Turnstile.
-
-- [JavaScript Guide & Examples](solvecaptcha/js.md)
-  - [API Reference](solvecaptcha/js/README.md)
-- [Python Guide & Examples](solvecaptcha/python.md)
-  - [API Reference](solvecaptcha/python/solvecaptcha.md)
-
-
+| Service | Description | SDK Documentation |
+| :--- | :--- | :--- |
+| **[₿ BitcoinVN](bitcoinvn/index.md)** | Vietnam crypto exchange & swaps: tickers, orders, staking | [JavaScript](bitcoinvn/js.md) · [Python](bitcoinvn/python.md) |
+| **[🔄 Swapzone](swapzone/index.md)** | Cross-chain DEX & swap aggregator across 15+ providers | [JavaScript](swapzone/js.md) · [Python](swapzone/python.md) |
+| **[⚡ SimpleSwap](simpleswap/index.md)** | Instant cryptocurrency exchange (v3) with custom fee tiers | [JavaScript](simpleswap/js.md) · [Python](simpleswap/python.md) |
+| **[🛡️ StealthEX](stealthex/index.md)** | Non-custodial instant crypto swaps (fixed & floating) | [JavaScript](stealthex/js.md) · [Python](stealthex/python.md) |
 

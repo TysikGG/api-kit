@@ -1,12 +1,17 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["src/index.ts"],
+  "entryPoints": [
+    "src/index.ts"
+  ],
   "tsconfig": "tsconfig.json",
   "out": "../../.github/docs/bitcoinvn/js",
-  "plugin": ["typedoc-plugin-markdown"],
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
   "readme": "none",
   "excludePrivate": true,
   "excludeInternal": true,
   "githubPages": false,
-  "disableSources": true
+  "disableSources": true,
+  "outputFileStrategy": "modules"
 }

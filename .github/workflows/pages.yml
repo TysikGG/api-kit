@@ -52,7 +52,9 @@ jobs:
           done
 
       - name: Build GitBook
-        run: npx --yes honkit build .github/docs _book
+        run: |
+          npx --yes honkit build .github/docs _book
+          node scripts/enhance-docs.js .github/docs/_book
 
       - uses: actions/upload-pages-artifact@v3
         with:

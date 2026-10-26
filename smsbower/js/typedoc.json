@@ -1,9 +1,14 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/index.ts"],
+  "entryPoints": [
+    "./src/index.ts"
+  ],
   "out": "../../.github/docs/smsbower/js",
-  "plugin": ["typedoc-plugin-markdown"],
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
   "readme": "none",
   "githubPages": false,
-  "cleanOutputDir": true
+  "cleanOutputDir": true,
+  "outputFileStrategy": "modules"
 }
