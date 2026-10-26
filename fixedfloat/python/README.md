@@ -48,7 +48,6 @@ print(f"Estimated receive amount: {price.to_side.amount} ETH")
 
 ## Documentation
 
-Full API documentation and reference are available in the [FixedFloat Documentation](https://tysikgg.github.io/api-kit/fixedfloat/python/).
 Official API documentation: [https://fixedfloat.com/api](https://fixedfloat.com/api).
 
 ## License

@@ -48,7 +48,6 @@ console.log(`Estimated receive amount: ${price.to.amount} ETH`);
 
 ## Documentation
 
-Full API documentation and reference are available in the [FixedFloat Documentation](https://tysikgg.github.io/api-kit/fixedfloat/js/).
 Official API documentation: [https://fixedfloat.com/api](https://fixedfloat.com/api).
 
 ## License

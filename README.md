@@ -2,10 +2,11 @@
 
 [![CI Tests](https://github.com/TysikGG/api-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/TysikGG/api-kit/actions/workflows/ci.yml)
 [![CI publish](https://github.com/TysikGG/api-kit/actions/workflows/publish.yml/badge.svg)](https://github.com/TysikGG/api-kit/actions/workflows/publish.yml)
-[![Documentation](https://github.com/TysikGG/api-kit/actions/workflows/pages.yml/badge.svg)](https://tysikgg.github.io/api-kit/)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 
 Monorepo of production-ready, fully typed, independent API client libraries for automation, messaging, and fintech platforms in TypeScript and Python.
+
+Each package is independent and self-contained. The primary source of truth for setup, configuration, and usage examples is the README in each package directory.
 
 ---
 
@@ -36,14 +37,6 @@ Monorepo of production-ready, fully typed, independent API client libraries for 
 
 ---
 
-## Documentation
-
-Full interactive documentation, guides, and auto-generated API references are hosted on GitHub Pages:
-
-🔗 **[https://tysikgg.github.io/api-kit/](https://tysikgg.github.io/api-kit/)**
-
----
-
 ## Development
 
 ### JavaScript / TypeScript
@@ -53,7 +46,6 @@ cd <service>/js
 npm install
 npm test          # Run unit test suite (mocked HTTP)
 npm run build     # Compile TypeScript to dist/
-npm run docs      # Regenerate TypeDoc markdown reference
 ```
 
 ### Python
@@ -63,7 +55,6 @@ cd <service>/python
 uv sync
 uv run pytest -m "not live"   # Run unit test suite (mocked HTTP)
 uv run ruff check .           # Run linter
-uv run pydoc-markdown         # Regenerate reference documentation
 ```
 
 ---

@@ -22,7 +22,6 @@ dev = [
   "pytest>=8",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
-  "pydoc-markdown>=4.8",
 ]
 
 [tool.hatch.build.targets.wheel]
