@@ -146,6 +146,15 @@
 * [Python SDK](sms-man/python.md)
   * [Python API Reference](sms-man/python/sms_man.md)
 
+## CapGuru
+
+* [Overview](capguru/index.md)
+* [JavaScript SDK](capguru/js.md)
+  * [JS API Reference](capguru/js/README.md)
+* [Python SDK](capguru/python.md)
+  * [Python API Reference](capguru/python/capguru.md)
+
+
 
 
 

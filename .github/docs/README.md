@@ -21,6 +21,7 @@ Select any service below to open its dedicated documentation and API reference.
 | **[🦅 Chaojiying](chaojiying/index.md)** | Image, text, and click-coordinate CAPTCHA (超级鹰) | [JavaScript](chaojiying/js.md) · [Python](chaojiying/python.md) |
 | **[🤖 SolveCaptcha](solvecaptcha/index.md)** | Human & AI CAPTCHA recognition (Turnstile, Image, Audio) | [JavaScript](solvecaptcha/js.md) · [Python](solvecaptcha/python.md) |
 | **[⚡ 2Captcha](twocaptcha/index.md)** | Human-powered & AI CAPTCHA solving (reCAPTCHA, Turnstile, hCaptcha) | [JavaScript](twocaptcha/js.md) · [Python](twocaptcha/python.md) |
+| **[🧠 CapGuru](capguru/index.md)** | AI-powered and human-assisted CAPTCHA solving API | [JavaScript](capguru/js.md) · [Python](capguru/python.md) |
 
 ---
 
