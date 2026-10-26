@@ -1,6 +1,24 @@
 # capguru-client
 
-TypeScript/JavaScript client for the [CapGuru](https://cap.guru/api-docs/) AI-powered and human-assisted CAPTCHA solving API.
+[![npm version](https://img.shields.io/npm/v/capguru-client.svg)](https://www.npmjs.com/package/capguru-client)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
+[![Node.js Version](https://img.shields.io/node/v/capguru-client.svg)](https://nodejs.org)
+
+Fast, fully typed TypeScript / Node.js client library for the [CapGuru](https://cap.guru/api-docs/) AI and human-assisted CAPTCHA solving API.
+
+Official API documentation: <https://cap.guru/api-docs/>
+
+---
+
+## Features
+
+- ⚡ **Full Captcha Support** — Cloudflare Turnstile, Google reCAPTCHA v2 / v3 / Enterprise, hCaptcha, FunCaptcha, GeeTest v3, normal image captchas, and text questions.
+- 🔄 **Built-in Auto Polling** — `solveTurnstile()`, `solveRecaptchaV2()`, and other high-level solve methods automatically wait until the solution is ready.
+- 🛡️ **Complete TypeScript Types** — Thorough type definitions for all options, parameters, and return payloads.
+- 🛠️ **Asynchronous Task Queue** — Low-level `createTask()` and `getTaskResult()` methods for custom task processing pipelines.
+- ⚖️ **Accuracy Reporting** — Built-in `reportGood()` and `reportBad()` methods for quality feedback and automated refunds.
+
+---
 
 ## Installation
 
@@ -8,46 +26,185 @@ TypeScript/JavaScript client for the [CapGuru](https://cap.guru/api-docs/) AI-po
 npm install capguru-client
 ```
 
-## Quick Start
+Requires Node.js 18 or higher.
 
-```ts
-import { CapGuruClient } from 'capguru-client';
+---
 
-const client = new CapGuruClient({
-  apiKey: process.env.CAPGURU_API_KEY || 'your-api-key',
+## Quick Start (Safe Check)
+
+The quick check only inspects your account balance. It does not create tasks or consume credits.
+
+```typescript
+import { CapGuru } from "capguru-client";
+
+const client = new CapGuru({
+  apiKey: process.env.CAPGURU_API_KEY!,
 });
 
-async function run() {
-  // Check account balance
-  const balance = await client.getBalance();
-  console.log(`Balance: ${balance}`);
-
-  // Solve Cloudflare Turnstile
-  const token = await client.solveTurnstile({
-    sitekey: '0x4AAAAAAABnOYoqxxxxxx',
-    pageurl: 'https://example.com',
-  });
-  console.log(`Turnstile token: ${token}`);
-}
-
-run();
+const balance = await client.getBalance();
+console.log(`Current CapGuru balance: $${balance.toFixed(2)} USD`);
 ```
 
-## Features
+---
 
-- Full support for CapGuru recognition types:
-  - `solveImage(options)`: Normal image and OCR captchas.
-  - `solveText(question)`: Question-based text captchas.
-  - `solveRecaptchaV2(options)`: Google reCAPTCHA v2 (checkbox & invisible).
-  - `solveRecaptchaV3(options)`: Google reCAPTCHA v3 with score threshold.
-  - `solveTurnstile(options)`: Cloudflare Turnstile CAPTCHA.
-  - `solveHCaptcha(options)`: hCaptcha challenges.
-  - `solveFunCaptcha(options)`: Arkose Labs FunCaptcha.
-  - `solveGeeTest(options)`: GeeTest v3.
-- Complete asynchronous task lifecycle (`createTask`, `getTaskResult`, `waitForResult`).
-- Feedback reporting (`reportGood`, `reportBad`).
-- Account balance checking (`getBalance`).
-- Built-in error handling via `CapGuruError`.
+## Usage Guide
+
+### 1. Solving Cloudflare Turnstile
+
+Solve Cloudflare Turnstile challenges and retrieve the verification token:
+
+```typescript
+import { CapGuru } from "capguru-client";
+
+const client = new CapGuru({ apiKey: process.env.CAPGURU_API_KEY! });
+
+const token = await client.solveTurnstile({
+  sitekey: "0x4AAAAAAADnPIDROrmt1Wwj",
+  pageurl: "https://example.com/protected",
+  action: "login", // optional
+});
+
+console.log("Turnstile solution token:", token);
+```
+
+### 2. Solving Google reCAPTCHA v2 & v3
+
+Solve normal or invisible reCAPTCHA v2, or score-based reCAPTCHA v3:
+
+```typescript
+// reCAPTCHA v2
+const tokenV2 = await client.solveRecaptchaV2({
+  googlekey: "6Le-wvkSAAAAAPBMRTvw0Q4CeHg-tUnSQVwyYcxQ",
+  pageurl: "https://example.com/login",
+  invisible: 0,
+});
+console.log("reCAPTCHA v2 token:", tokenV2);
+
+// reCAPTCHA v3
+const tokenV3 = await client.solveRecaptchaV3({
+  googlekey: "6LdyC2cUAAAAABlzY2Hg-tUnSQVwyYcxQ",
+  pageurl: "https://example.com/checkout",
+  action: "checkout",
+  minScore: 0.7,
+});
+console.log("reCAPTCHA v3 token:", tokenV3);
+```
+
+### 3. Solving Normal Image CAPTCHA
+
+Solve distorted image or text-in-image captchas by passing base64-encoded image data:
+
+```typescript
+import * as fs from "node:fs";
+
+const imageBuffer = fs.readFileSync("./captcha.png");
+const base64Image = imageBuffer.toString("base64");
+
+const solutionText = await client.solveImage({
+  body: base64Image,
+  numeric: 1, // numbers only
+  minLen: 4,
+  maxLen: 6,
+});
+
+console.log("Solved captcha text:", solutionText);
+```
+
+### 4. Low-Level Asynchronous Task Flow
+
+For background workers and task queues:
+
+```typescript
+// 1. Submit task
+const taskId = await client.createTask({
+  method: "turnstile",
+  sitekey: "0x4AAAAAAADnPIDROrmt1Wwj",
+  pageurl: "https://example.com",
+});
+console.log(`Task submitted: ${taskId}`);
+
+// 2. Poll manually or wait
+let token: string | null = null;
+for (let attempt = 0; attempt < 30; attempt++) {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  token = await client.getTaskResult(taskId);
+  if (token) break;
+}
+
+if (token) {
+  console.log("Solved:", token);
+  await client.reportGood(taskId);
+} else {
+  console.error("Failed to solve in time.");
+}
+```
+
+---
+
+## API Reference
+
+### `CapGuru` Class
+
+#### Constructor
+
+```typescript
+new CapGuru(options: CapGuruOptions)
+```
+
+| Option | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `apiKey` | `string` | **Required** | Your CapGuru API key. |
+| `baseUrl` | `string` | `"https://cap.guru"` | Custom API base URL. |
+| `timeout` | `number` | `30000` | HTTP request timeout in milliseconds. |
+| `defaultPollingTimeoutMs` | `number` | `120000` | Default polling timeout for solve methods. |
+| `defaultPollingIntervalMs` | `number` | `5000` | Default interval between status checks. |
+
+#### Methods
+
+- **`getBalance(): Promise<number>`** — Retrieves the current account balance in USD.
+- **`solveTurnstile(options, polling?): Promise<string>`** — Solves Cloudflare Turnstile captcha.
+- **`solveRecaptchaV2(options, polling?): Promise<string>`** — Solves reCAPTCHA v2 (checkbox or invisible).
+- **`solveRecaptchaV3(options, polling?): Promise<string>`** — Solves reCAPTCHA v3 with score.
+- **`solveHCaptcha(options, polling?): Promise<string>`** — Solves hCaptcha challenge.
+- **`solveFunCaptcha(options, polling?): Promise<string>`** — Solves Arkose Labs FunCaptcha.
+- **`solveGeeTest(options, polling?): Promise<GeeTestResult>`** — Solves GeeTest v3.
+- **`solveImage(options, polling?): Promise<string>`** — Solves base64 image captcha.
+- **`solveText(text, options?, polling?): Promise<string>`** — Solves text question captcha.
+- **`createTask(params): Promise<string>`** — Submits raw task to `/in.php` and returns task ID.
+- **`getTaskResult(taskId): Promise<string | null>`** — Checks task status, returns solution or `null` if not ready.
+- **`waitForResult(taskId, options?): Promise<string>`** — Polls until task is completed or timeout is reached.
+- **`reportGood(taskId): Promise<boolean>`** — Reports correctly solved captcha.
+- **`reportBad(taskId): Promise<boolean>`** — Reports incorrectly solved captcha for refund.
+
+---
+
+## Error Handling
+
+When an API error occurs, the client throws a `CapGuruError`:
+
+```typescript
+import { CapGuru, CapGuruError } from "capguru-client";
+
+try {
+  const client = new CapGuru({ apiKey: "invalid_key" });
+  await client.getBalance();
+} catch (error) {
+  if (error instanceof CapGuruError) {
+    console.error(`Error Code: ${error.code}`);
+    console.error(`Message: ${error.message}`);
+  }
+}
+```
+
+Common error codes:
+- `ERROR_WRONG_USER_KEY` — Provided API key is incorrect.
+- `ERROR_KEY_DOES_NOT_EXIST` — Invalid API key parameter.
+- `ERROR_ZERO_BALANCE` — Insufficient funds on account.
+- `ERROR_NO_SLOT_AVAILABLE` — Solving queue currently congested.
+- `CAPCHA_NOT_READY` — Resolution in progress.
+- `TIMEOUT` — Maximum polling wait duration exceeded.
+
+---
 
 ## License
 
