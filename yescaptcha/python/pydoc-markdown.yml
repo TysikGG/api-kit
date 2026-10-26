@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/yescaptcha/python/yescaptcha.md
+  filename: ../../.github/docs/yescaptcha/python/yescaptcha.md
   render_module_header: true

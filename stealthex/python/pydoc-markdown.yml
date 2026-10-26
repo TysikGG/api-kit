@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/stealthex/python/stealthex.md
+  filename: ../../.github/docs/stealthex/python/stealthex.md
   render_module_header: true

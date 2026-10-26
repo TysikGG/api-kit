@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/smsbulk/python/smsbulk.md
+  filename: ../../.github/docs/smsbulk/python/smsbulk.md
   render_module_header: true

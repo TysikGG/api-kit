@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/simpleswap/python/simpleswap.md
+  filename: ../../.github/docs/simpleswap/python/simpleswap.md
   render_module_header: true

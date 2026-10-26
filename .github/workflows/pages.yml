@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
+      - ".github/docs/**"
       - "*/*/src/**"
       - "*/*/typedoc.json"
       - "*/*/pyproject.toml"
@@ -52,7 +52,7 @@ jobs:
           done
 
       - name: Build GitBook
-        run: npx --yes honkit build docs _book
+        run: npx --yes honkit build .github/docs _book
 
       - uses: actions/upload-pages-artifact@v3
         with:

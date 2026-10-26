@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/swapzone/python/swapzone.md
+  filename: ../../.github/docs/swapzone/python/swapzone.md
   render_module_header: true

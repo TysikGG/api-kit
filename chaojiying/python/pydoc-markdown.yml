@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/chaojiying/python/chaojiying.md
+  filename: ../../.github/docs/chaojiying/python/chaojiying.md
   render_module_header: true

@@ -9,5 +9,5 @@ processors:
   - type: crossref
 renderer:
   type: markdown
-  filename: ../../docs/bitcoinvn/python/bitcoinvn.md
+  filename: ../../.github/docs/bitcoinvn/python/bitcoinvn.md
   render_module_header: true
