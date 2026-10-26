@@ -130,5 +130,14 @@
 * [Python SDK](twocaptcha/python.md)
   * [Python API Reference](twocaptcha/python/twocaptcha.md)
 
+## OnlineSIM
+
+* [Overview](onlinesim/index.md)
+* [JavaScript SDK](onlinesim/js.md)
+  * [JS API Reference](onlinesim/js/README.md)
+* [Python SDK](onlinesim/python.md)
+  * [Python API Reference](onlinesim/python/onlinesim.md)
+
+
 
 

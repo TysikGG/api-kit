@@ -11,6 +11,7 @@
     { id: "smsbower", name: "SMSBower", emoji: "💌", group: "SMS Verification" },
     { id: "vak-sms", name: "VAK-SMS", emoji: "📲", group: "SMS Verification" },
     { id: "give-sms", name: "Give-SMS", emoji: "✉️", group: "SMS Verification" },
+    { id: "onlinesim", name: "OnlineSIM", emoji: "📱", group: "SMS Verification" },
     { id: "bitcoinvn", name: "BitcoinVN", emoji: "₿", group: "Crypto Swaps" },
     { id: "swapzone", name: "Swapzone", emoji: "🔄", group: "Crypto Swaps" },
     { id: "simpleswap", name: "SimpleSwap", emoji: "⚡", group: "Crypto Swaps" },
