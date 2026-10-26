@@ -86,4 +86,12 @@
 * [Python](vak-sms/python.md)
   * [Reference](vak-sms/python/vak_sms.md)
 
+## SolveCaptcha
+
+* [JavaScript](solvecaptcha/js.md)
+  * [Reference](solvecaptcha/js/README.md)
+* [Python](solvecaptcha/python.md)
+  * [Reference](solvecaptcha/python/solvecaptcha.md)
+
+
 

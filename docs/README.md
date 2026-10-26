@@ -104,4 +104,13 @@ Virtual phone numbers and SMS OTP receiving service with multi-operator support.
 - [Python Guide & Examples](vak-sms/python.md)
   - [API Reference](vak-sms/python/vak_sms.md)
 
+### 🧩 SolveCaptcha
+Human-powered and AI CAPTCHA recognition service supporting image captchas, reCAPTCHA, and Turnstile.
+
+- [JavaScript Guide & Examples](solvecaptcha/js.md)
+  - [API Reference](solvecaptcha/js/README.md)
+- [Python Guide & Examples](solvecaptcha/python.md)
+  - [API Reference](solvecaptcha/python/solvecaptcha.md)
+
+
 
