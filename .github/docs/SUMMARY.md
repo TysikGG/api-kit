@@ -105,3 +105,12 @@
   * [JS API Reference](solvecaptcha/js/README.md)
 * [Python SDK](solvecaptcha/python.md)
   * [Python API Reference](solvecaptcha/python/solvecaptcha.md)
+
+## Give-SMS
+
+* [Overview](give-sms/index.md)
+* [JavaScript SDK](give-sms/js.md)
+  * [JS API Reference](give-sms/js/README.md)
+* [Python SDK](give-sms/python.md)
+  * [Python API Reference](give-sms/python/give_sms.md)
+
