@@ -122,4 +122,13 @@
 * [Python SDK](sideshift/python.md)
   * [Python API Reference](sideshift/python/sideshift.md)
 
+## 2Captcha
+
+* [Overview](twocaptcha/index.md)
+* [JavaScript SDK](twocaptcha/js.md)
+  * [JS API Reference](twocaptcha/js/README.md)
+* [Python SDK](twocaptcha/python.md)
+  * [Python API Reference](twocaptcha/python/twocaptcha.md)
+
+
 

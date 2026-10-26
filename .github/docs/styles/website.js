@@ -4,6 +4,7 @@
     { id: "yescaptcha", name: "YesCaptcha", emoji: "🧩", group: "CAPTCHA Solvers" },
     { id: "chaojiying", name: "Chaojiying", emoji: "🦅", group: "CAPTCHA Solvers" },
     { id: "solvecaptcha", name: "SolveCaptcha", emoji: "🤖", group: "CAPTCHA Solvers" },
+    { id: "twocaptcha", name: "2Captcha", emoji: "⚡", group: "CAPTCHA Solvers" },
     { id: "grizzly-sms", name: "Grizzly SMS", emoji: "🐻", group: "SMS Verification" },
     { id: "sv-number", name: "SV Number", emoji: "📱", group: "SMS Verification" },
     { id: "smsbulk", name: "SMSBulk", emoji: "📬", group: "SMS Verification" },

@@ -20,6 +20,7 @@ Select any service below to open its dedicated documentation and API reference.
 | **[🧩 YesCaptcha](yescaptcha/index.md)** | Multi-CAPTCHA: reCAPTCHA, hCaptcha, Turnstile, FunCaptcha | [JavaScript](yescaptcha/js.md) · [Python](yescaptcha/python.md) |
 | **[🦅 Chaojiying](chaojiying/index.md)** | Image, text, and click-coordinate CAPTCHA (超级鹰) | [JavaScript](chaojiying/js.md) · [Python](chaojiying/python.md) |
 | **[🤖 SolveCaptcha](solvecaptcha/index.md)** | Human & AI CAPTCHA recognition (Turnstile, Image, Audio) | [JavaScript](solvecaptcha/js.md) · [Python](solvecaptcha/python.md) |
+| **[⚡ 2Captcha](twocaptcha/index.md)** | Human-powered & AI CAPTCHA solving (reCAPTCHA, Turnstile, hCaptcha) | [JavaScript](twocaptcha/js.md) · [Python](twocaptcha/python.md) |
 
 ---
 
