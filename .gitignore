@@ -34,6 +34,7 @@ env/
 .env
 .env.*
 !.env.example
+AGENTS.md
 
 # GitBook / HonKit
 _book/
