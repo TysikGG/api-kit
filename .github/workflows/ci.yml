@@ -1,0 +1,54 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-js:
+    name: Test JavaScript Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run Jest test suites
+        run: |
+          set -eu
+          for dir in */js; do
+            echo "::group::Testing $dir"
+            npm ci --prefix "$dir"
+            npm --prefix "$dir" test
+            echo "::endgroup::"
+          done
+
+  test-python:
+    name: Test Python Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Run Pytest test suites
+        run: |
+          set -eu
+          for dir in */python; do
+            echo "::group::Testing $dir"
+            (cd "$dir" && uv sync && uv run pytest -m "not live")
+            echo "::endgroup::"
+          done
