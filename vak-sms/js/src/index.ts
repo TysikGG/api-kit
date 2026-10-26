@@ -1,8 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-/**
- * Default software/affiliate identifier (empty if none assigned).
- */
+/** @internal */
 export const DEFAULT_SOFT_ID = '';
 
 /**

@@ -594,9 +594,3 @@ The generated `cf-turnstile-response` token.
 > **BalanceData** = [`PayPerSolveBalance`](#paypersolvebalance) \| [`PackageBalance`](#packagebalance)
 
 Account balance information.
-
-## Variables
-
-### APP\_ID
-
-> `const` **APP\_ID**: `"app_05c1f418153804ec393a7211"` = `"app_05c1f418153804ec393a7211"`

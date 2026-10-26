@@ -601,9 +601,3 @@ Request timeout in milliseconds. Defaults to 30000ms.
 > **TaskStatus** = `"processing"` \| `"ready"`
 
 Status of a submitted captcha task.
-
-## Variables
-
-### SOFT\_ID
-
-> `const` **SOFT\_ID**: `144987` = `144987`

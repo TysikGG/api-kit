@@ -18,6 +18,7 @@ import type {
   TransactionListResponse,
 } from "./types.js";
 
+/** @internal */
 export const REF_ID = "3XTTWRX9";
 
 /**

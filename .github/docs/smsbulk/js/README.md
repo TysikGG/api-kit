@@ -1243,9 +1243,3 @@ Virtual number activation status.
 > **EmailActivationStatus** = `"WAITING"` \| `"RECEIVED"` \| `"CANCELLED"` \| `"EXPIRED"` \| `"REFUNDED"` \| `"ERROR"`
 
 Email activation status.
-
-## Variables
-
-### REF\_ID
-
-> `const` **REF\_ID**: `"3XTTWRX9"` = `"3XTTWRX9"`

@@ -8,7 +8,7 @@
 
 ### SmsBowerClient
 
-Defined in: [src/index.ts:188](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L188)
+Defined in: [src/index.ts:186](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L186)
 
 Client for the SMSBower virtual number and SMS activation service.
 
@@ -18,7 +18,7 @@ Client for the SMSBower virtual number and SMS activation service.
 
 > **new SmsBowerClient**(`options`): [`SmsBowerClient`](#smsbowerclient)
 
-Defined in: [src/index.ts:206](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L206)
+Defined in: [src/index.ts:204](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L204)
 
 Creates a new SmsBowerClient.
 
@@ -50,7 +50,7 @@ console.log(`Current balance: $${balance}`);
 
 > **getActualWalletAddress**(`coin`, `network`): `Promise`\<\{ `wallet_address`: `string`; \}\>
 
-Defined in: [src/index.ts:574](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L574)
+Defined in: [src/index.ts:572](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L572)
 
 Retrieves static wallet address for crypto deposits.
 
@@ -85,7 +85,7 @@ console.log('Deposit address:', wallet.wallet_address);
 
 > **getBalance**(): `Promise`\<`number`\>
 
-Defined in: [src/index.ts:236](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L236)
+Defined in: [src/index.ts:234](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L234)
 
 Checks the current account balance.
 
@@ -106,7 +106,7 @@ console.log('Account balance:', balance);
 
 > **getCountries**(): `Promise`\<`Record`\<`string`, [`CountryItem`](#countryitem)\>\>
 
-Defined in: [src/index.ts:536](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L536)
+Defined in: [src/index.ts:534](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L534)
 
 Retrieves the full catalog of available countries.
 
@@ -127,7 +127,7 @@ console.log('Country 22:', countries['22']);
 
 > **getNumber**(`options`): `Promise`\<[`ActivationNumber`](#activationnumber)\>
 
-Defined in: [src/index.ts:264](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L264)
+Defined in: [src/index.ts:262](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L262)
 
 Orders a new virtual phone number.
 
@@ -159,7 +159,7 @@ console.log(`Order ID: ${activation.id}, Number: ${activation.number}`);
 
 > **getNumberV2**(`options`): `Promise`\<[`ActivationNumberV2`](#activationnumberv2)\>
 
-Defined in: [src/index.ts:315](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L315)
+Defined in: [src/index.ts:313](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L313)
 
 Orders a new virtual phone number with rich details (v2 protocol).
 
@@ -191,7 +191,7 @@ console.log(`Number: ${details.phoneNumber}, Cost: ${details.activationCost}`);
 
 > **getPrices**(`service?`, `country?`): `Promise`\<`Record`\<`string`, `Record`\<`string`, \{ `cost`: `number`; `count`: `number`; \}\>\>\>
 
-Defined in: [src/index.ts:430](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L430)
+Defined in: [src/index.ts:428](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L428)
 
 Gets prices and counts for services and countries.
 
@@ -226,7 +226,7 @@ console.log(prices);
 
 > **getPricesV2**(`service?`, `country?`): `Promise`\<`Record`\<`string`, `Record`\<`string`, `Record`\<`string`, `number`\>\>\>\>
 
-Defined in: [src/index.ts:456](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L456)
+Defined in: [src/index.ts:454](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L454)
 
 Gets detailed price lists grouped by price point (v2).
 
@@ -261,7 +261,7 @@ console.log(pricesV2);
 
 > **getPricesV3**(`service?`, `country?`): `Promise`\<`Record`\<`string`, `Record`\<`string`, `Record`\<`string`, \{ `count`: `number`; `price`: `number`; `provider_id`: `string` \| `number`; \}\>\>\>\>
 
-Defined in: [src/index.ts:482](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L482)
+Defined in: [src/index.ts:480](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L480)
 
 Gets granular price lists by provider ID (v3).
 
@@ -296,7 +296,7 @@ console.log(pricesV3);
 
 > **getServicesList**(): `Promise`\<[`ServiceItem`](#serviceitem)[]\>
 
-Defined in: [src/index.ts:511](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L511)
+Defined in: [src/index.ts:509](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L509)
 
 Retrieves the full catalog of supported services.
 
@@ -317,7 +317,7 @@ console.log(`Found ${services.length} services`);
 
 > **getStatus**(`id`): `Promise`\<[`ActivationStatus`](#activationstatus)\>
 
-Defined in: [src/index.ts:366](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L366)
+Defined in: [src/index.ts:364](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L364)
 
 Checks the status and retrieves the received SMS code for an activation.
 
@@ -348,7 +348,7 @@ if (res.status === 'STATUS_OK') {
 
 > **getTopCountriesByService**(`service`): `Promise`\<`Record`\<`string`, `unknown`\>\>
 
-Defined in: [src/index.ts:553](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L553)
+Defined in: [src/index.ts:551](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L551)
 
 Retrieves the top 10 countries and gold partners for a service.
 
@@ -377,7 +377,7 @@ console.log(top);
 
 > **setStatus**(`id`, `status`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:408](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L408)
+Defined in: [src/index.ts:406](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L406)
 
 Changes the activation status.
 Status actions:
@@ -417,7 +417,7 @@ console.log('Activation completed');
 
 ### SmsBowerError
 
-Defined in: [src/index.ts:166](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L166)
+Defined in: [src/index.ts:164](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L164)
 
 Error thrown by the SMSBower client when API calls fail.
 
@@ -431,7 +431,7 @@ Error thrown by the SMSBower client when API calls fail.
 
 > **new SmsBowerError**(`message`, `code?`, `responseBody?`): [`SmsBowerError`](#smsbowererror)
 
-Defined in: [src/index.ts:176](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L176)
+Defined in: [src/index.ts:174](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L174)
 
 ###### Parameters
 
@@ -471,7 +471,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > `readonly` `optional` **code?**: `string`
 
-Defined in: [src/index.ts:170](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L170)
+Defined in: [src/index.ts:168](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L168)
 
 Short error identifier returned by the server (e.g. BAD_KEY, NO_NUMBERS).
 
@@ -499,7 +499,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `readonly` `optional` **responseBody?**: `string`
 
-Defined in: [src/index.ts:174](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L174)
+Defined in: [src/index.ts:172](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L172)
 
 Raw server response body.
 
@@ -635,7 +635,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ### ActivationNumber
 
-Defined in: [src/index.ts:67](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L67)
+Defined in: [src/index.ts:65](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L65)
 
 Acquired virtual phone number from getNumber.
 
@@ -645,7 +645,7 @@ Acquired virtual phone number from getNumber.
 
 > **id**: `string`
 
-Defined in: [src/index.ts:71](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L71)
+Defined in: [src/index.ts:69](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L69)
 
 Unique activation ID.
 
@@ -653,7 +653,7 @@ Unique activation ID.
 
 > **number**: `string`
 
-Defined in: [src/index.ts:75](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L75)
+Defined in: [src/index.ts:73](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L73)
 
 Full phone number with country code.
 
@@ -661,7 +661,7 @@ Full phone number with country code.
 
 ### ActivationNumberV2
 
-Defined in: [src/index.ts:81](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L81)
+Defined in: [src/index.ts:79](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L79)
 
 Extended activation details returned from getNumberV2.
 
@@ -675,7 +675,7 @@ Extended activation details returned from getNumberV2.
 
 > `optional` **activationCost?**: `number`
 
-Defined in: [src/index.ts:93](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L93)
+Defined in: [src/index.ts:91](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L91)
 
 Cost deducted for the activation.
 
@@ -683,7 +683,7 @@ Cost deducted for the activation.
 
 > **activationId**: `string` \| `number`
 
-Defined in: [src/index.ts:85](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L85)
+Defined in: [src/index.ts:83](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L83)
 
 Activation identifier.
 
@@ -691,7 +691,7 @@ Activation identifier.
 
 > `optional` **activationOperator?**: `string`
 
-Defined in: [src/index.ts:109](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L109)
+Defined in: [src/index.ts:107](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L107)
 
 Mobile operator name or code.
 
@@ -699,7 +699,7 @@ Mobile operator name or code.
 
 > `optional` **activationTime?**: `string`
 
-Defined in: [src/index.ts:105](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L105)
+Defined in: [src/index.ts:103](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L103)
 
 Activation timestamp.
 
@@ -707,7 +707,7 @@ Activation timestamp.
 
 > `optional` **canGetAnotherSms?**: `number` \| `boolean`
 
-Defined in: [src/index.ts:101](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L101)
+Defined in: [src/index.ts:99](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L99)
 
 Whether another SMS code can be requested.
 
@@ -715,7 +715,7 @@ Whether another SMS code can be requested.
 
 > `optional` **countryCode?**: `string` \| `number`
 
-Defined in: [src/index.ts:97](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L97)
+Defined in: [src/index.ts:95](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L95)
 
 Country code identifier.
 
@@ -723,7 +723,7 @@ Country code identifier.
 
 > **phoneNumber**: `string` \| `number`
 
-Defined in: [src/index.ts:89](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L89)
+Defined in: [src/index.ts:87](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L87)
 
 Full phone number with country code.
 
@@ -731,7 +731,7 @@ Full phone number with country code.
 
 ### ActivationStatus
 
-Defined in: [src/index.ts:116](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L116)
+Defined in: [src/index.ts:114](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L114)
 
 Activation status response.
 
@@ -741,7 +741,7 @@ Activation status response.
 
 > `optional` **code?**: `string`
 
-Defined in: [src/index.ts:124](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L124)
+Defined in: [src/index.ts:122](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L122)
 
 Received SMS verification code, if available.
 
@@ -749,7 +749,7 @@ Received SMS verification code, if available.
 
 > **status**: `string`
 
-Defined in: [src/index.ts:120](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L120)
+Defined in: [src/index.ts:118](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L118)
 
 Raw status code name (e.g. STATUS_WAIT_CODE, STATUS_WAIT_RETRY, STATUS_CANCEL, STATUS_OK).
 
@@ -757,7 +757,7 @@ Raw status code name (e.g. STATUS_WAIT_CODE, STATUS_WAIT_RETRY, STATUS_CANCEL, S
 
 ### CountryItem
 
-Defined in: [src/index.ts:144](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L144)
+Defined in: [src/index.ts:142](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L142)
 
 Country listing item.
 
@@ -767,7 +767,7 @@ Country listing item.
 
 > `optional` **chn?**: `string`
 
-Defined in: [src/index.ts:160](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L160)
+Defined in: [src/index.ts:158](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L158)
 
 Chinese country name.
 
@@ -775,7 +775,7 @@ Chinese country name.
 
 > `optional` **eng?**: `string`
 
-Defined in: [src/index.ts:156](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L156)
+Defined in: [src/index.ts:154](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L154)
 
 English country name.
 
@@ -783,7 +783,7 @@ English country name.
 
 > **id**: `string` \| `number`
 
-Defined in: [src/index.ts:148](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L148)
+Defined in: [src/index.ts:146](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L146)
 
 Country numeric identifier.
 
@@ -791,7 +791,7 @@ Country numeric identifier.
 
 > `optional` **rus?**: `string`
 
-Defined in: [src/index.ts:152](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L152)
+Defined in: [src/index.ts:150](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L150)
 
 Russian country name.
 
@@ -799,7 +799,7 @@ Russian country name.
 
 ### GetNumberOptions
 
-Defined in: [src/index.ts:29](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L29)
+Defined in: [src/index.ts:27](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L27)
 
 Options for ordering a virtual phone number.
 
@@ -809,7 +809,7 @@ Options for ordering a virtual phone number.
 
 > `optional` **country?**: `string` \| `number`
 
-Defined in: [src/index.ts:37](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L37)
+Defined in: [src/index.ts:35](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L35)
 
 Country ID or code (e.g. '22' for India, '1003' for Bermuda).
 
@@ -817,7 +817,7 @@ Country ID or code (e.g. '22' for India, '1003' for Bermuda).
 
 > `optional` **exceptProviderIds?**: `string` \| `number`[]
 
-Defined in: [src/index.ts:53](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L53)
+Defined in: [src/index.ts:51](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L51)
 
 Blacklist provider IDs (comma-separated string or array of IDs).
 
@@ -825,7 +825,7 @@ Blacklist provider IDs (comma-separated string or array of IDs).
 
 > `optional` **maxPrice?**: `number`
 
-Defined in: [src/index.ts:41](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L41)
+Defined in: [src/index.ts:39](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L39)
 
 Maximum acceptable price for purchasing the number.
 
@@ -833,7 +833,7 @@ Maximum acceptable price for purchasing the number.
 
 > `optional` **minPrice?**: `number`
 
-Defined in: [src/index.ts:45](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L45)
+Defined in: [src/index.ts:43](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L43)
 
 Minimum acceptable price for purchasing the number.
 
@@ -841,7 +841,7 @@ Minimum acceptable price for purchasing the number.
 
 > `optional` **phoneException?**: `string`
 
-Defined in: [src/index.ts:57](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L57)
+Defined in: [src/index.ts:55](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L55)
 
 Excluded number prefix masks (e.g. '7918,7900111').
 
@@ -849,7 +849,7 @@ Excluded number prefix masks (e.g. '7918,7900111').
 
 > `optional` **providerIds?**: `string` \| `number`[]
 
-Defined in: [src/index.ts:49](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L49)
+Defined in: [src/index.ts:47](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L47)
 
 Whitelist provider IDs (comma-separated string or array of IDs).
 
@@ -857,7 +857,7 @@ Whitelist provider IDs (comma-separated string or array of IDs).
 
 > **service**: `string`
 
-Defined in: [src/index.ts:33](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L33)
+Defined in: [src/index.ts:31](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L31)
 
 Service code (e.g. 'tg' for Telegram, 'wa' for WhatsApp).
 
@@ -865,7 +865,7 @@ Service code (e.g. 'tg' for Telegram, 'wa' for WhatsApp).
 
 > `optional` **userID?**: `string` \| `number`
 
-Defined in: [src/index.ts:61](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L61)
+Defined in: [src/index.ts:59](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L59)
 
 Reseller user identifier.
 
@@ -873,7 +873,7 @@ Reseller user identifier.
 
 ### ServiceItem
 
-Defined in: [src/index.ts:130](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L130)
+Defined in: [src/index.ts:128](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L128)
 
 Service listing item.
 
@@ -883,7 +883,7 @@ Service listing item.
 
 > **code**: `string`
 
-Defined in: [src/index.ts:134](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L134)
+Defined in: [src/index.ts:132](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L132)
 
 Service short code (e.g. 'tg', 'kt').
 
@@ -891,7 +891,7 @@ Service short code (e.g. 'tg', 'kt').
 
 > **name**: `string`
 
-Defined in: [src/index.ts:138](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L138)
+Defined in: [src/index.ts:136](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L136)
 
 Human-readable service name.
 
@@ -899,7 +899,7 @@ Human-readable service name.
 
 ### SmsBowerClientOptions
 
-Defined in: [src/index.ts:11](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L11)
+Defined in: [src/index.ts:9](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L9)
 
 Configuration options for the SmsBowerClient.
 
@@ -909,7 +909,7 @@ Configuration options for the SmsBowerClient.
 
 > **apiKey**: `string`
 
-Defined in: [src/index.ts:15](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L15)
+Defined in: [src/index.ts:13](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L13)
 
 API key obtained from SMSBower dashboard.
 
@@ -917,7 +917,7 @@ API key obtained from SMSBower dashboard.
 
 > `optional` **baseURL?**: `string`
 
-Defined in: [src/index.ts:19](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L19)
+Defined in: [src/index.ts:17](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L17)
 
 Base URL for the SMSBower API. Defaults to https://smsbower.page.
 
@@ -925,7 +925,7 @@ Base URL for the SMSBower API. Defaults to https://smsbower.page.
 
 > `optional` **timeout?**: `number`
 
-Defined in: [src/index.ts:23](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L23)
+Defined in: [src/index.ts:21](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L21)
 
 Request timeout in milliseconds. Defaults to 30000 ms.
 
@@ -935,6 +935,6 @@ Request timeout in milliseconds. Defaults to 30000 ms.
 
 > `const` **DEFAULT\_REF\_ID**: `"572438"` = `'572438'`
 
-Defined in: [src/index.ts:6](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/smsbower/js/src/index.ts#L6)
+Defined in: [src/index.ts:4](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/smsbower/js/src/index.ts#L4)
 
-Default referrer identifier sent on number purchases.
+**`Internal`**

@@ -156,12 +156,6 @@ Common error codes:
 
 ---
 
-## Partner Referrer ID
-
-In accordance with the service's partner integration requirements, outgoing requests to `handler_api.php` automatically include the hardcoded partner referrer ID.
-
----
-
 ## License
 
 [ISC](LICENSE) © api-kit contributors

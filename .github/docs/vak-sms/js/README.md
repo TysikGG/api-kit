@@ -8,7 +8,7 @@
 
 ### VakSmsClient
 
-Defined in: [src/index.ts:155](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L155)
+Defined in: [src/index.ts:153](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L153)
 
 Client for the VAK-SMS temporary number and SMS OTP receiving service.
 
@@ -18,7 +18,7 @@ Client for the VAK-SMS temporary number and SMS OTP receiving service.
 
 > **new VakSmsClient**(`options`): [`VakSmsClient`](#vaksmsclient)
 
-Defined in: [src/index.ts:174](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L174)
+Defined in: [src/index.ts:172](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L172)
 
 Creates a new VakSmsClient.
 
@@ -50,7 +50,7 @@ console.log(`Balance: ${balance} RUB`);
 
 > **getBalance**(): `Promise`\<`number`\>
 
-Defined in: [src/index.ts:206](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L206)
+Defined in: [src/index.ts:204](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L204)
 
 Retrieves the current account balance.
 
@@ -71,7 +71,7 @@ console.log(`Current balance: ${balance}`);
 
 > **getCountNumber**(`service`, `country?`, `operator?`): `Promise`\<[`CountNumber`](#countnumber)\>
 
-Defined in: [src/index.ts:410](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L410)
+Defined in: [src/index.ts:408](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L408)
 
 Checks available phone number quantity and price for a service.
 
@@ -112,7 +112,7 @@ console.log(`Available: ${count.count}, Price: ${count.price} RUB`);
 
 > **getCountNumbersList**(`country?`, `operator?`, `rent?`): `Promise`\<`Record`\<`string`, `unknown`\>\>
 
-Defined in: [src/index.ts:471](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L471)
+Defined in: [src/index.ts:469](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L469)
 
 Retrieves full catalog of available services and stock for a country.
 
@@ -153,7 +153,7 @@ console.log(catalog);
 
 > **getCountryList**(): `Promise`\<[`CountryOperator`](#countryoperator)[]\>
 
-Defined in: [src/index.ts:449](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L449)
+Defined in: [src/index.ts:447](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L447)
 
 Retrieves the catalog of supported countries and operators.
 
@@ -174,7 +174,7 @@ console.log(`Supported countries: ${countries.length}`);
 
 > **getNumber**(`options`): `Promise`\<[`VakNumber`](#vaknumber)\>
 
-Defined in: [src/index.ts:229](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L229)
+Defined in: [src/index.ts:227](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L227)
 
 Requests a temporary virtual phone number.
 
@@ -206,7 +206,7 @@ console.log(`Phone: ${order.tel}, ID: ${order.idNum}`);
 
 > **getSmsCode**(`idNum`, `all?`): `Promise`\<`string` \| `string`[] \| `null`\>
 
-Defined in: [src/index.ts:318](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L318)
+Defined in: [src/index.ts:316](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L316)
 
 Retrieves incoming SMS code(s) for an active order.
 
@@ -243,7 +243,7 @@ if (code) {
 
 > **prolongNumber**(`service`, `tel`, `softId?`): `Promise`\<[`VakNumber`](#vaknumber)\>
 
-Defined in: [src/index.ts:274](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L274)
+Defined in: [src/index.ts:272](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L272)
 
 Extends the rental duration for an existing number.
 
@@ -284,7 +284,7 @@ console.log(`Prolonged ID: ${res.idNum}`);
 
 > **setStatus**(`idNum`, `status`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:384](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L384)
+Defined in: [src/index.ts:382](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L382)
 
 Updates activation status.
 
@@ -324,7 +324,7 @@ console.log('Activation completed');
 
 > **waitForCode**(`idNum`, `options?`): `Promise`\<`string` \| `null`\>
 
-Defined in: [src/index.ts:345](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L345)
+Defined in: [src/index.ts:343](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L343)
 
 Polls until an SMS code arrives or timeout occurs.
 
@@ -365,7 +365,7 @@ console.log('Code:', code);
 
 ### VakSmsError
 
-Defined in: [src/index.ts:133](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L133)
+Defined in: [src/index.ts:131](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L131)
 
 Error thrown by the VAK-SMS client when API calls fail.
 
@@ -379,7 +379,7 @@ Error thrown by the VAK-SMS client when API calls fail.
 
 > **new VakSmsError**(`message`, `code?`, `responseBody?`): [`VakSmsError`](#vaksmserror)
 
-Defined in: [src/index.ts:143](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L143)
+Defined in: [src/index.ts:141](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L141)
 
 ###### Parameters
 
@@ -419,7 +419,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > `readonly` `optional` **code?**: `string`
 
-Defined in: [src/index.ts:137](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L137)
+Defined in: [src/index.ts:135](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L135)
 
 Error code identifier returned by VAK-SMS.
 
@@ -447,7 +447,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `readonly` `optional` **responseBody?**: `unknown`
 
-Defined in: [src/index.ts:141](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L141)
+Defined in: [src/index.ts:139](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L139)
 
 Raw response payload from the server.
 
@@ -583,7 +583,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ### CountNumber
 
-Defined in: [src/index.ts:81](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L81)
+Defined in: [src/index.ts:79](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L79)
 
 Available number count and unit price for a service.
 
@@ -593,7 +593,7 @@ Available number count and unit price for a service.
 
 > **count**: `number`
 
-Defined in: [src/index.ts:89](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L89)
+Defined in: [src/index.ts:87](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L87)
 
 Number of available phone numbers currently in stock.
 
@@ -601,7 +601,7 @@ Number of available phone numbers currently in stock.
 
 > `optional` **price?**: `number`
 
-Defined in: [src/index.ts:93](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L93)
+Defined in: [src/index.ts:91](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L91)
 
 Unit cost per activation.
 
@@ -609,7 +609,7 @@ Unit cost per activation.
 
 > **service**: `string`
 
-Defined in: [src/index.ts:85](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L85)
+Defined in: [src/index.ts:83](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L83)
 
 Service short code.
 
@@ -617,7 +617,7 @@ Service short code.
 
 ### CountryOperator
 
-Defined in: [src/index.ts:99](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L99)
+Defined in: [src/index.ts:97](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L97)
 
 Supported country metadata and available operators.
 
@@ -627,7 +627,7 @@ Supported country metadata and available operators.
 
 > **countryCode**: `string`
 
-Defined in: [src/index.ts:107](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L107)
+Defined in: [src/index.ts:105](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L105)
 
 Country 2-letter ISO code.
 
@@ -635,7 +635,7 @@ Country 2-letter ISO code.
 
 > **countryName**: `string`
 
-Defined in: [src/index.ts:103](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L103)
+Defined in: [src/index.ts:101](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L101)
 
 Human-readable country name.
 
@@ -643,7 +643,7 @@ Human-readable country name.
 
 > **operatorList**: `string`[]
 
-Defined in: [src/index.ts:111](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L111)
+Defined in: [src/index.ts:109](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L109)
 
 List of supported mobile network operators.
 
@@ -651,7 +651,7 @@ List of supported mobile network operators.
 
 ### GetNumberOptions
 
-Defined in: [src/index.ts:33](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L33)
+Defined in: [src/index.ts:31](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L31)
 
 Options for requesting a virtual phone number.
 
@@ -661,7 +661,7 @@ Options for requesting a virtual phone number.
 
 > `optional` **country?**: `string`
 
-Defined in: [src/index.ts:41](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L41)
+Defined in: [src/index.ts:39](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L39)
 
 Country code (e.g. 'ru', 'kz', 'ua').
 
@@ -669,7 +669,7 @@ Country code (e.g. 'ru', 'kz', 'ua').
 
 > `optional` **operator?**: `string`
 
-Defined in: [src/index.ts:45](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L45)
+Defined in: [src/index.ts:43](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L43)
 
 Mobile operator name (e.g. 'megafon', 'beeline', 'tele2').
 
@@ -677,7 +677,7 @@ Mobile operator name (e.g. 'megafon', 'beeline', 'tele2').
 
 > `optional` **rent?**: `boolean`
 
-Defined in: [src/index.ts:49](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L49)
+Defined in: [src/index.ts:47](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L47)
 
 Whether to order a prolonged rental number (e.g. 4 hours).
 
@@ -685,7 +685,7 @@ Whether to order a prolonged rental number (e.g. 4 hours).
 
 > **service**: `string` \| `string`[]
 
-Defined in: [src/index.ts:37](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L37)
+Defined in: [src/index.ts:35](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L35)
 
 Service code (e.g. 'tg' for Telegram, 'wa' for WhatsApp) or an array of two codes.
 
@@ -693,7 +693,7 @@ Service code (e.g. 'tg' for Telegram, 'wa' for WhatsApp) or an array of two code
 
 > `optional` **softId?**: `string`
 
-Defined in: [src/index.ts:53](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L53)
+Defined in: [src/index.ts:51](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L51)
 
 Optional partner/software ID override.
 
@@ -701,7 +701,7 @@ Optional partner/software ID override.
 
 ### VakNumber
 
-Defined in: [src/index.ts:59](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L59)
+Defined in: [src/index.ts:57](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L57)
 
 Acquired virtual phone number details.
 
@@ -711,7 +711,7 @@ Acquired virtual phone number details.
 
 > **idNum**: `string`
 
-Defined in: [src/index.ts:67](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L67)
+Defined in: [src/index.ts:65](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L65)
 
 Unique operation/order identifier.
 
@@ -719,7 +719,7 @@ Unique operation/order identifier.
 
 > `optional` **rent?**: `boolean`
 
-Defined in: [src/index.ts:75](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L75)
+Defined in: [src/index.ts:73](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L73)
 
 Whether the number was leased under a prolonged rental.
 
@@ -727,7 +727,7 @@ Whether the number was leased under a prolonged rental.
 
 > `optional` **service?**: `string`
 
-Defined in: [src/index.ts:71](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L71)
+Defined in: [src/index.ts:69](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L69)
 
 Service code requested.
 
@@ -735,7 +735,7 @@ Service code requested.
 
 > **tel**: `string` \| `number`
 
-Defined in: [src/index.ts:63](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L63)
+Defined in: [src/index.ts:61](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L61)
 
 Full phone number with country dial code.
 
@@ -743,7 +743,7 @@ Full phone number with country dial code.
 
 ### VakSmsClientOptions
 
-Defined in: [src/index.ts:11](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L11)
+Defined in: [src/index.ts:9](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L9)
 
 Configuration options for the VakSmsClient.
 
@@ -753,7 +753,7 @@ Configuration options for the VakSmsClient.
 
 > **apiKey**: `string`
 
-Defined in: [src/index.ts:15](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L15)
+Defined in: [src/index.ts:13](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L13)
 
 API key obtained from VAK-SMS dashboard.
 
@@ -761,7 +761,7 @@ API key obtained from VAK-SMS dashboard.
 
 > `optional` **baseURL?**: `string`
 
-Defined in: [src/index.ts:19](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L19)
+Defined in: [src/index.ts:17](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L17)
 
 Base URL for the VAK-SMS API. Defaults to https://vak-sms.com.
 
@@ -769,7 +769,7 @@ Base URL for the VAK-SMS API. Defaults to https://vak-sms.com.
 
 > `optional` **softId?**: `string`
 
-Defined in: [src/index.ts:27](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L27)
+Defined in: [src/index.ts:25](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L25)
 
 Optional partner/software identifier.
 
@@ -777,7 +777,7 @@ Optional partner/software identifier.
 
 > `optional` **timeout?**: `number`
 
-Defined in: [src/index.ts:23](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L23)
+Defined in: [src/index.ts:21](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L21)
 
 Request timeout in milliseconds. Defaults to 30000 ms.
 
@@ -787,9 +787,9 @@ Request timeout in milliseconds. Defaults to 30000 ms.
 
 > `const` **DEFAULT\_SOFT\_ID**: `""` = `''`
 
-Defined in: [src/index.ts:6](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L6)
+Defined in: [src/index.ts:4](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L4)
 
-Default software/affiliate identifier (empty if none assigned).
+**`Internal`**
 
 ***
 
@@ -797,6 +797,6 @@ Default software/affiliate identifier (empty if none assigned).
 
 > `const` **VAK\_SMS\_ERROR\_DESCRIPTIONS**: `Record`\<`string`, `string`\>
 
-Defined in: [src/index.ts:117](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/vak-sms/js/src/index.ts#L117)
+Defined in: [src/index.ts:115](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/vak-sms/js/src/index.ts#L115)
 
 Error dictionary for known VAK-SMS error codes.

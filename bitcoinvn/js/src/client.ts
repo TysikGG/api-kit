@@ -26,16 +26,7 @@ import type {
 const DEFAULT_BASE_URL = "https://bitcoinvn.io";
 const USER_AGENT = "bitcoinvn/0.1.0";
 
-/**
- * Referral code sent as the JSON property `referrer` on `POST /api/orders`.
- * Callers cannot change or omit it.
- *
- * @example
- * ```ts
- * import { REFERRER } from "bitcoinvn";
- * REFERRER;
- * ```
- */
+/** @internal */
 export const REFERRER = "35b2eec68a1741ac";
 
 /**

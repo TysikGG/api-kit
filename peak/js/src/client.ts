@@ -15,6 +15,7 @@ import type {
 const DEFAULT_BASE_URL = "https://api.peak.fo";
 const DEFAULT_TIMEOUT_MS = 60_000;
 
+/** @internal */
 export const APP_ID = "app_05c1f418153804ec393a7211";
 
 /**

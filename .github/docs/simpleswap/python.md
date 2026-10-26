@@ -1,6 +1,6 @@
 # SimpleSwap — Python
 
-The `simpleswap-client` package provides a Python client for the [SimpleSwap](https://simpleswap.io/en/affiliate-program/help-center/article/public-api-guide) cryptocurrency exchange API (v3).
+The `simpleswap-client` package provides a Python client for the [SimpleSwap](https://api.simpleswap.io) cryptocurrency exchange API (v3).
 
 ```sh
 pip install simpleswap-client

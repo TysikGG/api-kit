@@ -13,6 +13,7 @@ import type {
 const DEFAULT_BASE_URL = "https://api.yescaptcha.com";
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/** @internal */
 export const SOFT_ID = 144987;
 
 /**

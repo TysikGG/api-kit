@@ -14,7 +14,7 @@ Official API documentation: <https://docs.yescaptcha.com>
 
 - 🧩 **Multi-Captcha Support** — reCAPTCHA v2/v3/Enterprise, hCaptcha, Cloudflare Turnstile, Arkose FunCaptcha, AWS WAF, and ImageToText.
 - ⏳ **Built-in Polling** — `waitForResult()` and `solve()` handle polling intervals, timeouts, and `AbortSignal` cancellation automatically.
-- 💰 **Balance Tracking** — Check main balance, software points, and referral earnings via `getBalance()`.
+- 💰 **Balance Tracking** — Check account balance and point statistics via `getBalance()`.
 - 📦 **Dual Module Support** — Works out-of-the-box with both ES Modules and CommonJS.
 - 🛡️ **Typed & Robust** — Complete TypeScript definitions and structured `YesCaptchaError` exceptions with error codes.
 

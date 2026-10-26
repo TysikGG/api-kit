@@ -683,9 +683,3 @@ Request timeout in milliseconds. Defaults to 30000ms.
 ### PricesByCountry
 
 > **PricesByCountry** = `Record`\<`string`, `Record`\<`string`, \{ `cost`: `number`; `count`: `number`; \}\>\>
-
-## Variables
-
-### REF\_KEY
-
-> `const` **REF\_KEY**: `"226"` = `"226"`

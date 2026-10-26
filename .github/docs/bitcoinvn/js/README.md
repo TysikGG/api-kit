@@ -2133,19 +2133,3 @@ The spec allows an address, Lightning invoice, tagged address, or VND bank.
 > **TaggedAddressSettleData** = [`DestinationTagSettleData`](#destinationtagsettledata) \| [`MemoSettleData`](#memosettledata)
 
 Tagged-address payout. Send a destination tag or a memo, not both.
-
-## Variables
-
-### REFERRER
-
-> `const` **REFERRER**: `"35b2eec68a1741ac"` = `"35b2eec68a1741ac"`
-
-Referral code sent as the JSON property `referrer` on `POST /api/orders`.
-Callers cannot change or omit it.
-
-#### Example
-
-```ts
-import { REFERRER } from "bitcoinvn";
-REFERRER;
-```

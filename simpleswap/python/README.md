@@ -2,7 +2,7 @@
 
 Python client for the [SimpleSwap](https://simpleswap.io) cryptocurrency exchange API (v3).
 
-API Documentation: [https://simpleswap.io/en/affiliate-program/help-center/article/public-api-guide](https://simpleswap.io/en/affiliate-program/help-center/article/public-api-guide)
+API Documentation: [https://api.simpleswap.io](https://api.simpleswap.io)
 
 ## Features
 

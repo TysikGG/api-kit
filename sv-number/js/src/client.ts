@@ -17,6 +17,7 @@ import type {
 const DEFAULT_BASE_URL = "https://sms-verification-number.com";
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/** @internal */
 export const REF_KEY = "226";
 
 /**

@@ -9,7 +9,9 @@ import type {
   ScoreResult,
 } from "./types.js";
 
+/** @internal */
 export const SOFT_ID = "984642";
+/** @internal */
 export const SOFT_KEY = "369fe52d5cdbb147892a40ac78f13e60";
 
 /**

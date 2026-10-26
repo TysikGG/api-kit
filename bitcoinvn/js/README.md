@@ -173,12 +173,6 @@ try {
 
 ---
 
-## Partner Referrer ID
-
-In accordance with BitcoinVN's partner program, outgoing `POST /api/orders` requests automatically include the required referrer identifier in the payload.
-
----
-
 ## License
 
 [ISC](LICENSE) © api-kit contributors

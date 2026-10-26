@@ -8,7 +8,7 @@
 
 ### SolveCaptchaClient
 
-Defined in: [src/index.ts:257](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L257)
+Defined in: [src/index.ts:255](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L255)
 
 Client for the SolveCaptcha human and AI captcha solving service.
 
@@ -18,7 +18,7 @@ Client for the SolveCaptcha human and AI captcha solving service.
 
 > **new SolveCaptchaClient**(`options`): [`SolveCaptchaClient`](#solvecaptchaclient)
 
-Defined in: [src/index.ts:278](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L278)
+Defined in: [src/index.ts:276](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L276)
 
 Creates a new SolveCaptchaClient.
 
@@ -50,7 +50,7 @@ console.log(`Balance: $${balance}`);
 
 > **createTask**(`params`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:545](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L545)
+Defined in: [src/index.ts:543](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L543)
 
 Submits a captcha task to /in.php and returns the assigned task ID.
 
@@ -72,7 +72,7 @@ Assigned numeric task ID string.
 
 > **getBalance**(): `Promise`\<`number`\>
 
-Defined in: [src/index.ts:317](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L317)
+Defined in: [src/index.ts:315](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L315)
 
 Retrieves the current account balance.
 
@@ -93,7 +93,7 @@ console.log(`Current balance: $${balance}`);
 
 > **getTaskResult**(`taskId`): `Promise`\<`string` \| `null`\>
 
-Defined in: [src/index.ts:595](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L595)
+Defined in: [src/index.ts:593](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L593)
 
 Checks the status and gets the result of a submitted task.
 
@@ -115,7 +115,7 @@ Solution string, or null if captcha is still being solved.
 
 > **reportBad**(`taskId`): `Promise`\<`boolean`\>
 
-Defined in: [src/index.ts:664](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L664)
+Defined in: [src/index.ts:662](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L662)
 
 Reports that a captcha was solved incorrectly to request a refund.
 
@@ -137,7 +137,7 @@ True if report recorded.
 
 > **reportGood**(`taskId`): `Promise`\<`boolean`\>
 
-Defined in: [src/index.ts:646](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L646)
+Defined in: [src/index.ts:644](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L644)
 
 Reports that a captcha was solved correctly.
 
@@ -159,7 +159,7 @@ True if report recorded.
 
 > **solveFunCaptcha**(`options`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:485](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L485)
+Defined in: [src/index.ts:483](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L483)
 
 Solves Arkose Labs FunCaptcha.
 
@@ -190,7 +190,7 @@ const token = await client.solveFunCaptcha({
 
 > **solveGeeTest**(`options`): `Promise`\<[`GeeTestResult`](#geetestresult)\>
 
-Defined in: [src/index.ts:516](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L516)
+Defined in: [src/index.ts:514](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L514)
 
 Solves GeeTest captcha.
 
@@ -223,7 +223,7 @@ console.log(res.validate);
 
 > **solveImage**(`options`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:342](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L342)
+Defined in: [src/index.ts:340](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L340)
 
 Solves an image-based captcha from base64 data.
 
@@ -254,7 +254,7 @@ console.log(`Solved text: ${text}`);
 
 > **solveRecaptchaV2**(`options`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:400](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L400)
+Defined in: [src/index.ts:398](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L398)
 
 Solves Google reCAPTCHA V2.
 
@@ -286,7 +286,7 @@ console.log('Token:', token);
 
 > **solveRecaptchaV3**(`options`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:429](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L429)
+Defined in: [src/index.ts:427](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L427)
 
 Solves Google reCAPTCHA V3.
 
@@ -319,7 +319,7 @@ const token = await client.solveRecaptchaV3({
 
 > **solveText**(`text`, `options?`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:375](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L375)
+Defined in: [src/index.ts:373](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L373)
 
 Solves a text question captcha.
 
@@ -354,7 +354,7 @@ console.log(`Answer: ${answer}`);
 
 > **solveTurnstile**(`options`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:457](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L457)
+Defined in: [src/index.ts:455](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L455)
 
 Solves Cloudflare Turnstile.
 
@@ -385,7 +385,7 @@ const token = await client.solveTurnstile({
 
 > **waitForResult**(`taskId`, `timeoutMs?`, `intervalMs?`): `Promise`\<`string`\>
 
-Defined in: [src/index.ts:617](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L617)
+Defined in: [src/index.ts:615](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L615)
 
 Polls until a captcha task is solved or timeout occurs.
 
@@ -419,7 +419,7 @@ Solved captcha string.
 
 ### SolveCaptchaError
 
-Defined in: [src/index.ts:235](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L235)
+Defined in: [src/index.ts:233](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L233)
 
 Error thrown by the SolveCaptcha client when API requests or solving tasks fail.
 
@@ -433,7 +433,7 @@ Error thrown by the SolveCaptcha client when API requests or solving tasks fail.
 
 > **new SolveCaptchaError**(`message`, `code?`, `responseBody?`): [`SolveCaptchaError`](#solvecaptchaerror)
 
-Defined in: [src/index.ts:245](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L245)
+Defined in: [src/index.ts:243](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L243)
 
 ###### Parameters
 
@@ -473,7 +473,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > `readonly` `optional` **code?**: `string`
 
-Defined in: [src/index.ts:239](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L239)
+Defined in: [src/index.ts:237](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L237)
 
 Error code returned by SolveCaptcha.
 
@@ -501,7 +501,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `readonly` `optional` **responseBody?**: `unknown`
 
-Defined in: [src/index.ts:243](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L243)
+Defined in: [src/index.ts:241](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L241)
 
 Raw server response payload.
 
@@ -637,7 +637,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 ### FunCaptchaOptions
 
-Defined in: [src/index.ts:163](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L163)
+Defined in: [src/index.ts:161](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L161)
 
 Options for solving Arkose Labs FunCaptcha.
 
@@ -647,7 +647,7 @@ Options for solving Arkose Labs FunCaptcha.
 
 > `optional` **data?**: `string` \| `Record`\<`string`, `unknown`\>
 
-Defined in: [src/index.ts:179](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L179)
+Defined in: [src/index.ts:177](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L177)
 
 Custom data payload.
 
@@ -655,7 +655,7 @@ Custom data payload.
 
 > **pageurl**: `string`
 
-Defined in: [src/index.ts:171](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L171)
+Defined in: [src/index.ts:169](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L169)
 
 Full URL of the page containing FunCaptcha.
 
@@ -663,7 +663,7 @@ Full URL of the page containing FunCaptcha.
 
 > **publickey**: `string`
 
-Defined in: [src/index.ts:167](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L167)
+Defined in: [src/index.ts:165](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L165)
 
 FunCaptcha public key.
 
@@ -671,7 +671,7 @@ FunCaptcha public key.
 
 > `optional` **surl?**: `string`
 
-Defined in: [src/index.ts:175](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L175)
+Defined in: [src/index.ts:173](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L173)
 
 Custom service URL (surl).
 
@@ -679,7 +679,7 @@ Custom service URL (surl).
 
 ### GeeTestOptions
 
-Defined in: [src/index.ts:185](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L185)
+Defined in: [src/index.ts:183](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L183)
 
 Options for solving GeeTest captcha.
 
@@ -689,7 +689,7 @@ Options for solving GeeTest captcha.
 
 > `optional` **apiServer?**: `string`
 
-Defined in: [src/index.ts:201](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L201)
+Defined in: [src/index.ts:199](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L199)
 
 Optional custom api_server domain.
 
@@ -697,7 +697,7 @@ Optional custom api_server domain.
 
 > **challenge**: `string`
 
-Defined in: [src/index.ts:193](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L193)
+Defined in: [src/index.ts:191](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L191)
 
 GeeTest 'challenge' token.
 
@@ -705,7 +705,7 @@ GeeTest 'challenge' token.
 
 > **gt**: `string`
 
-Defined in: [src/index.ts:189](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L189)
+Defined in: [src/index.ts:187](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L187)
 
 GeeTest 'gt' key.
 
@@ -713,7 +713,7 @@ GeeTest 'gt' key.
 
 > **pageurl**: `string`
 
-Defined in: [src/index.ts:197](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L197)
+Defined in: [src/index.ts:195](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L195)
 
 Full URL of the page containing GeeTest.
 
@@ -721,7 +721,7 @@ Full URL of the page containing GeeTest.
 
 ### GeeTestResult
 
-Defined in: [src/index.ts:207](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L207)
+Defined in: [src/index.ts:205](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L205)
 
 Result returned for GeeTest captcha solutions.
 
@@ -731,25 +731,25 @@ Result returned for GeeTest captcha solutions.
 
 > **challenge**: `string`
 
-Defined in: [src/index.ts:208](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L208)
+Defined in: [src/index.ts:206](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L206)
 
 ##### seccode
 
 > **seccode**: `string`
 
-Defined in: [src/index.ts:210](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L210)
+Defined in: [src/index.ts:208](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L208)
 
 ##### validate
 
 > **validate**: `string`
 
-Defined in: [src/index.ts:209](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L209)
+Defined in: [src/index.ts:207](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L207)
 
 ***
 
 ### ImageCaptchaOptions
 
-Defined in: [src/index.ts:41](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L41)
+Defined in: [src/index.ts:39](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L39)
 
 Options for solving a normal image captcha.
 
@@ -759,7 +759,7 @@ Options for solving a normal image captcha.
 
 > **body**: `string`
 
-Defined in: [src/index.ts:45](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L45)
+Defined in: [src/index.ts:43](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L43)
 
 Base64 encoded image string.
 
@@ -767,7 +767,7 @@ Base64 encoded image string.
 
 > `optional` **calc?**: `0` \| `1`
 
-Defined in: [src/index.ts:61](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L61)
+Defined in: [src/index.ts:59](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L59)
 
 0 = no math, 1 = requires calculation.
 
@@ -775,7 +775,7 @@ Defined in: [src/index.ts:61](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 > `optional` **language?**: `0` \| `1` \| `2`
 
-Defined in: [src/index.ts:73](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L73)
+Defined in: [src/index.ts:71](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L71)
 
 0 = not specified, 1 = Cyrillic, 2 = Latin.
 
@@ -783,7 +783,7 @@ Defined in: [src/index.ts:73](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 > `optional` **maxLen?**: `number`
 
-Defined in: [src/index.ts:69](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L69)
+Defined in: [src/index.ts:67](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L67)
 
 Maximum number of characters.
 
@@ -791,7 +791,7 @@ Maximum number of characters.
 
 > `optional` **minLen?**: `number`
 
-Defined in: [src/index.ts:65](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L65)
+Defined in: [src/index.ts:63](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L63)
 
 Minimum number of characters.
 
@@ -799,7 +799,7 @@ Minimum number of characters.
 
 > `optional` **numeric?**: `0` \| `1` \| `2` \| `3` \| `4`
 
-Defined in: [src/index.ts:57](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L57)
+Defined in: [src/index.ts:55](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L55)
 
 0 = not specified, 1 = only numbers, 2 = only letters, 3 = only numbers OR only letters, 4 = both numbers and letters.
 
@@ -807,7 +807,7 @@ Defined in: [src/index.ts:57](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 > `optional` **phrase?**: `0` \| `1`
 
-Defined in: [src/index.ts:49](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L49)
+Defined in: [src/index.ts:47](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L47)
 
 0 = single word, 1 = two or more words.
 
@@ -815,7 +815,7 @@ Defined in: [src/index.ts:49](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 > `optional` **regsense?**: `0` \| `1`
 
-Defined in: [src/index.ts:53](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L53)
+Defined in: [src/index.ts:51](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L51)
 
 0 = case insensitive, 1 = case sensitive.
 
@@ -823,7 +823,7 @@ Defined in: [src/index.ts:53](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 > `optional` **textinstructions?**: `string`
 
-Defined in: [src/index.ts:77](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L77)
+Defined in: [src/index.ts:75](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L75)
 
 Optional text instructions for the worker.
 
@@ -831,7 +831,7 @@ Optional text instructions for the worker.
 
 ### RecaptchaV2Options
 
-Defined in: [src/index.ts:93](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L93)
+Defined in: [src/index.ts:91](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L91)
 
 Options for solving Google reCAPTCHA V2.
 
@@ -841,7 +841,7 @@ Options for solving Google reCAPTCHA V2.
 
 > `optional` **dataS?**: `string`
 
-Defined in: [src/index.ts:109](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L109)
+Defined in: [src/index.ts:107](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L107)
 
 Optional 'data-s' parameter value for protected endpoints.
 
@@ -849,7 +849,7 @@ Optional 'data-s' parameter value for protected endpoints.
 
 > **googlekey**: `string`
 
-Defined in: [src/index.ts:97](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L97)
+Defined in: [src/index.ts:95](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L95)
 
 Sitekey found in target page HTML.
 
@@ -857,7 +857,7 @@ Sitekey found in target page HTML.
 
 > `optional` **invisible?**: `boolean`
 
-Defined in: [src/index.ts:105](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L105)
+Defined in: [src/index.ts:103](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L103)
 
 Whether the reCAPTCHA is invisible.
 
@@ -865,7 +865,7 @@ Whether the reCAPTCHA is invisible.
 
 > **pageurl**: `string`
 
-Defined in: [src/index.ts:101](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L101)
+Defined in: [src/index.ts:99](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L99)
 
 Full URL of the page containing the reCAPTCHA.
 
@@ -873,7 +873,7 @@ Full URL of the page containing the reCAPTCHA.
 
 ### RecaptchaV3Options
 
-Defined in: [src/index.ts:115](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L115)
+Defined in: [src/index.ts:113](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L113)
 
 Options for solving Google reCAPTCHA V3.
 
@@ -883,7 +883,7 @@ Options for solving Google reCAPTCHA V3.
 
 > `optional` **action?**: `string`
 
-Defined in: [src/index.ts:127](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L127)
+Defined in: [src/index.ts:125](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L125)
 
 Action parameter value.
 
@@ -891,7 +891,7 @@ Action parameter value.
 
 > **googlekey**: `string`
 
-Defined in: [src/index.ts:119](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L119)
+Defined in: [src/index.ts:117](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L117)
 
 Sitekey found in target page HTML.
 
@@ -899,7 +899,7 @@ Sitekey found in target page HTML.
 
 > `optional` **minScore?**: `number`
 
-Defined in: [src/index.ts:131](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L131)
+Defined in: [src/index.ts:129](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L129)
 
 Minimum required score (e.g. 0.3, 0.7, 0.9).
 
@@ -907,7 +907,7 @@ Minimum required score (e.g. 0.3, 0.7, 0.9).
 
 > **pageurl**: `string`
 
-Defined in: [src/index.ts:123](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L123)
+Defined in: [src/index.ts:121](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L121)
 
 Full URL of the page containing the reCAPTCHA.
 
@@ -915,7 +915,7 @@ Full URL of the page containing the reCAPTCHA.
 
 ### SolveCaptchaClientOptions
 
-Defined in: [src/index.ts:11](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L11)
+Defined in: [src/index.ts:9](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L9)
 
 Configuration options for the SolveCaptchaClient.
 
@@ -925,7 +925,7 @@ Configuration options for the SolveCaptchaClient.
 
 > **apiKey**: `string`
 
-Defined in: [src/index.ts:15](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L15)
+Defined in: [src/index.ts:13](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L13)
 
 API key obtained from SolveCaptcha dashboard.
 
@@ -933,7 +933,7 @@ API key obtained from SolveCaptcha dashboard.
 
 > `optional` **baseURL?**: `string`
 
-Defined in: [src/index.ts:19](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L19)
+Defined in: [src/index.ts:17](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L17)
 
 Base URL for the SolveCaptcha API. Defaults to https://api.solvecaptcha.com.
 
@@ -941,7 +941,7 @@ Base URL for the SolveCaptcha API. Defaults to https://api.solvecaptcha.com.
 
 > `optional` **defaultPollingIntervalMs?**: `number`
 
-Defined in: [src/index.ts:35](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L35)
+Defined in: [src/index.ts:33](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L33)
 
 Default polling interval in milliseconds. Defaults to 5000 ms.
 
@@ -949,7 +949,7 @@ Default polling interval in milliseconds. Defaults to 5000 ms.
 
 > `optional` **defaultPollingTimeoutMs?**: `number`
 
-Defined in: [src/index.ts:31](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L31)
+Defined in: [src/index.ts:29](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L29)
 
 Default polling timeout in milliseconds for captcha resolution. Defaults to 120000 ms.
 
@@ -957,7 +957,7 @@ Default polling timeout in milliseconds for captcha resolution. Defaults to 1200
 
 > `optional` **softId?**: `string` \| `number`
 
-Defined in: [src/index.ts:27](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L27)
+Defined in: [src/index.ts:25](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L25)
 
 Optional partner/software ID.
 
@@ -965,7 +965,7 @@ Optional partner/software ID.
 
 > `optional` **timeout?**: `number`
 
-Defined in: [src/index.ts:23](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L23)
+Defined in: [src/index.ts:21](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L21)
 
 Request timeout in milliseconds. Defaults to 30000 ms.
 
@@ -973,7 +973,7 @@ Request timeout in milliseconds. Defaults to 30000 ms.
 
 ### TextCaptchaOptions
 
-Defined in: [src/index.ts:83](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L83)
+Defined in: [src/index.ts:81](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L81)
 
 Options for solving a text question captcha.
 
@@ -983,7 +983,7 @@ Options for solving a text question captcha.
 
 > `optional` **language?**: `0` \| `1` \| `2`
 
-Defined in: [src/index.ts:87](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L87)
+Defined in: [src/index.ts:85](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L85)
 
 0 = not specified, 1 = Cyrillic, 2 = Latin.
 
@@ -991,7 +991,7 @@ Defined in: [src/index.ts:87](https://github.com/TysikGG/api-kit/blob/c2d915256c
 
 ### TurnstileOptions
 
-Defined in: [src/index.ts:137](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L137)
+Defined in: [src/index.ts:135](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L135)
 
 Options for solving Cloudflare Turnstile.
 
@@ -1001,7 +1001,7 @@ Options for solving Cloudflare Turnstile.
 
 > `optional` **action?**: `string`
 
-Defined in: [src/index.ts:149](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L149)
+Defined in: [src/index.ts:147](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L147)
 
 Optional action parameter.
 
@@ -1009,7 +1009,7 @@ Optional action parameter.
 
 > `optional` **data?**: `string`
 
-Defined in: [src/index.ts:153](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L153)
+Defined in: [src/index.ts:151](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L151)
 
 Optional cData parameter.
 
@@ -1017,7 +1017,7 @@ Optional cData parameter.
 
 > `optional` **pagedata?**: `string`
 
-Defined in: [src/index.ts:157](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L157)
+Defined in: [src/index.ts:155](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L155)
 
 Optional pagedata parameter.
 
@@ -1025,7 +1025,7 @@ Optional pagedata parameter.
 
 > **pageurl**: `string`
 
-Defined in: [src/index.ts:145](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L145)
+Defined in: [src/index.ts:143](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L143)
 
 Full URL of the page with the Turnstile widget.
 
@@ -1033,7 +1033,7 @@ Full URL of the page with the Turnstile widget.
 
 > **sitekey**: `string`
 
-Defined in: [src/index.ts:141](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L141)
+Defined in: [src/index.ts:139](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L139)
 
 Turnstile sitekey.
 
@@ -1043,9 +1043,9 @@ Turnstile sitekey.
 
 > `const` **DEFAULT\_SOFT\_ID**: `""` = `''`
 
-Defined in: [src/index.ts:6](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L6)
+Defined in: [src/index.ts:4](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L4)
 
-Default software/affiliate identifier (empty if none assigned).
+**`Internal`**
 
 ***
 
@@ -1053,6 +1053,6 @@ Default software/affiliate identifier (empty if none assigned).
 
 > `const` **SOLVE\_CAPTCHA\_ERRORS**: `Record`\<`string`, `string`\>
 
-Defined in: [src/index.ts:216](https://github.com/TysikGG/api-kit/blob/c2d915256c081352f45d822ad08041a2d00353b1/solvecaptcha/js/src/index.ts#L216)
+Defined in: [src/index.ts:214](https://github.com/TysikGG/api-kit/blob/1670ebdeb94706da0170e404cd9baa6f4088d210/solvecaptcha/js/src/index.ts#L214)
 
 Known error descriptions for SolveCaptcha.

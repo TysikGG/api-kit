@@ -1,8 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 
-/**
- * Default referrer identifier sent on number purchases.
- */
+/** @internal */
 export const DEFAULT_REF_ID = '572438';
 
 /**
