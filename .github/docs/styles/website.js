@@ -13,7 +13,8 @@
     { id: "bitcoinvn", name: "BitcoinVN", emoji: "₿", group: "Crypto Swaps" },
     { id: "swapzone", name: "Swapzone", emoji: "🔄", group: "Crypto Swaps" },
     { id: "simpleswap", name: "SimpleSwap", emoji: "⚡", group: "Crypto Swaps" },
-    { id: "stealthex", name: "StealthEX", emoji: "🛡️", group: "Crypto Swaps" }
+    { id: "stealthex", name: "StealthEX", emoji: "🛡️", group: "Crypto Swaps" },
+    { id: "sideshift", name: "SideShift", emoji: "🔄", group: "Crypto Swaps" }
   ];
 
   function getBasePath() {

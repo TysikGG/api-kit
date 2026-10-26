@@ -44,4 +44,5 @@ Select any service below to open its dedicated documentation and API reference.
 | **[🔄 Swapzone](swapzone/index.md)** | Cross-chain DEX & swap aggregator across 15+ providers | [JavaScript](swapzone/js.md) · [Python](swapzone/python.md) |
 | **[⚡ SimpleSwap](simpleswap/index.md)** | Instant cryptocurrency exchange (v3) with custom fee tiers | [JavaScript](simpleswap/js.md) · [Python](simpleswap/python.md) |
 | **[🛡️ StealthEX](stealthex/index.md)** | Non-custodial instant crypto swaps (fixed & floating) | [JavaScript](stealthex/js.md) · [Python](stealthex/python.md) |
+| **[🔄 SideShift](sideshift/index.md)** | Instant cross-chain swaps & DEX aggregator (fixed & variable) | [JavaScript](sideshift/js.md) · [Python](sideshift/python.md) |
 

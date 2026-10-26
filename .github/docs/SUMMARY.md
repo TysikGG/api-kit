@@ -114,3 +114,12 @@
 * [Python SDK](give-sms/python.md)
   * [Python API Reference](give-sms/python/give_sms.md)
 
+## SideShift
+
+* [Overview](sideshift/index.md)
+* [JavaScript SDK](sideshift/js.md)
+  * [JS API Reference](sideshift/js/README.md)
+* [Python SDK](sideshift/python.md)
+  * [Python API Reference](sideshift/python/sideshift.md)
+
+
