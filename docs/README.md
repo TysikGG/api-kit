@@ -96,3 +96,12 @@ Temporary virtual phone numbers and SMS verification API.
 - [Python Guide & Examples](smsbower/python.md)
   - [API Reference](smsbower/python/smsbower.md)
 
+### 📲 VAK-SMS
+Virtual phone numbers and SMS OTP receiving service with multi-operator support.
+
+- [JavaScript Guide & Examples](vak-sms/js.md)
+  - [API Reference](vak-sms/js/README.md)
+- [Python Guide & Examples](vak-sms/python.md)
+  - [API Reference](vak-sms/python/vak_sms.md)
+
+

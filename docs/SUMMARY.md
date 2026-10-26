@@ -79,3 +79,11 @@
 * [Python](smsbower/python.md)
   * [Reference](smsbower/python/smsbower.md)
 
+## VAK-SMS
+
+* [JavaScript](vak-sms/js.md)
+  * [Reference](vak-sms/js/README.md)
+* [Python](vak-sms/python.md)
+  * [Reference](vak-sms/python/vak_sms.md)
+
+
