@@ -1,4 +1,4 @@
-# swapzone-client
+# swapzone
 
 TypeScript client for the [Swapzone](https://swapzone.io) instant cryptocurrency exchange and DEX aggregator API.
 
@@ -15,13 +15,13 @@ API Documentation: [https://documenter.getpostman.com/view/16362858/UVXokDS6](ht
 ## Installation
 
 ```bash
-npm install swapzone-client
+npm install swapzone
 ```
 
 ## Quick Start
 
 ```typescript
-import { Swapzone } from "swapzone-client";
+import { Swapzone } from "swapzone";
 
 const client = new Swapzone({
   apiKey: process.env.SWAPZONE_API_KEY,

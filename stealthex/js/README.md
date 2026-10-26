@@ -1,4 +1,4 @@
-# stealthex-client
+# stealthex
 
 TypeScript client for the [StealthEX](https://stealthex.io) non-custodial cryptocurrency exchange API.
 
@@ -14,13 +14,13 @@ API Documentation: [https://documenter.getpostman.com/view/24333719/2s9YJZ54yN](
 ## Installation
 
 ```bash
-npm install stealthex-client
+npm install stealthex
 ```
 
 ## Quick Start
 
 ```typescript
-import { StealthEX } from "stealthex-client";
+import { StealthEX } from "stealthex";
 
 const client = new StealthEX({
   apiKey: process.env.STEALTHEX_API_KEY,

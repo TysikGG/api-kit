@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "swapzone-client"
+name = "swapzone"
 version = "0.1.0"
 description = "Python client for the Swapzone cryptocurrency exchange and DEX aggregator API"
 readme = "README.md"

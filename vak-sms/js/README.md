@@ -1,4 +1,4 @@
-# vak-sms-client
+# vak-sms
 
 TypeScript and Node.js client for the [VAK-SMS API](https://vak-sms.com/en/api/).
 
@@ -12,13 +12,13 @@ TypeScript and Node.js client for the [VAK-SMS API](https://vak-sms.com/en/api/)
 ## Installation
 
 ```bash
-npm install vak-sms-client
+npm install vak-sms
 ```
 
 ## Quick Start
 
 ```typescript
-import { VakSmsClient } from 'vak-sms-client';
+import { VakSmsClient } from 'vak-sms';
 
 const client = new VakSmsClient({
   apiKey: process.env.VAK_SMS_API_KEY!,
@@ -40,7 +40,7 @@ main().catch(console.error);
 ## Ordering a Virtual Number and Receiving SMS
 
 ```typescript
-import { VakSmsClient } from 'vak-sms-client';
+import { VakSmsClient } from 'vak-sms';
 
 const client = new VakSmsClient({ apiKey: 'YOUR_API_KEY' });
 

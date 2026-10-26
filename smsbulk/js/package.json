@@ -1,5 +1,5 @@
 {
-  "name": "smsbulk-client",
+  "name": "smsbulk",
   "version": "0.1.0",
   "description": "TypeScript client for the SMSBulk virtual number and email verification API",
   "main": "./dist/index.js",

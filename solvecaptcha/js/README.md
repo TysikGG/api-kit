@@ -1,4 +1,4 @@
-# solvecaptcha-client
+# solvecaptcha
 
 TypeScript and Node.js client for the [SolveCaptcha API](https://solvecaptcha.com/captcha-solver-api).
 
@@ -12,13 +12,13 @@ TypeScript and Node.js client for the [SolveCaptcha API](https://solvecaptcha.co
 ## Installation
 
 ```bash
-npm install solvecaptcha-client
+npm install solvecaptcha
 ```
 
 ## Quick Start
 
 ```typescript
-import { SolveCaptchaClient } from 'solvecaptcha-client';
+import { SolveCaptchaClient } from 'solvecaptcha';
 
 const client = new SolveCaptchaClient({
   apiKey: process.env.SOLVECAPTCHA_API_KEY!,
@@ -38,7 +38,7 @@ main().catch(console.error);
 ### Image Captcha
 
 ```typescript
-import { SolveCaptchaClient } from 'solvecaptcha-client';
+import { SolveCaptchaClient } from 'solvecaptcha';
 
 const client = new SolveCaptchaClient({ apiKey: 'YOUR_API_KEY' });
 

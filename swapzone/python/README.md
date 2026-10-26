@@ -1,4 +1,4 @@
-# swapzone-client
+# swapzone
 
 Python client for the [Swapzone](https://swapzone.io) cryptocurrency exchange and DEX aggregator API.
 
@@ -16,7 +16,7 @@ API Documentation: [https://documenter.getpostman.com/view/16362858/UVXokDS6](ht
 ## Installation
 
 ```bash
-pip install swapzone-client
+pip install swapzone
 ```
 
 ## Quick Start

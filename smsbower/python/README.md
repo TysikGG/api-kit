@@ -1,4 +1,4 @@
-# smsbower-client
+# smsbower
 
 Python client for the [SMSBower API](https://smsbower.app/api?page=client).
 
@@ -12,7 +12,7 @@ Python client for the [SMSBower API](https://smsbower.app/api?page=client).
 ## Installation
 
 ```bash
-pip install smsbower-client
+pip install smsbower
 ```
 
 ## Quick Start

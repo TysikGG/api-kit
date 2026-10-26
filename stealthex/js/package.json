@@ -1,5 +1,5 @@
 {
-  "name": "stealthex-client",
+  "name": "stealthex",
   "version": "0.1.0",
   "description": "TypeScript client for the StealthEX instant cryptocurrency exchange API",
   "main": "./dist/index.js",

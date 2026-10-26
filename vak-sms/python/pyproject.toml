@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "vak-sms-client"
+name = "vak-sms"
 version = "0.1.0"
 description = "Python client for the VAK-SMS virtual number and SMS activation API"
 readme = "README.md"

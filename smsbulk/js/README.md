@@ -1,4 +1,4 @@
-# smsbulk-client
+# smsbulk
 
 Official TypeScript/JavaScript client for the [SMSBulk](https://smsbulk.net) virtual phone number and email verification API.
 
@@ -15,13 +15,13 @@ API Documentation: [https://smsbulk.net/en/docs](https://smsbulk.net/en/docs)
 ## Installation
 
 ```bash
-npm install smsbulk-client
+npm install smsbulk
 ```
 
 ## Quick Start
 
 ```typescript
-import { SMSBulk } from "smsbulk-client";
+import { SMSBulk } from "smsbulk";
 
 const client = new SMSBulk({
   apiKey: process.env.SMSBULK_API_KEY,

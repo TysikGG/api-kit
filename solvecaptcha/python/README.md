@@ -1,4 +1,4 @@
-# solvecaptcha-client
+# solvecaptcha
 
 Python client for the [SolveCaptcha API](https://solvecaptcha.com/captcha-solver-api).
 
@@ -12,7 +12,7 @@ Python client for the [SolveCaptcha API](https://solvecaptcha.com/captcha-solver
 ## Installation
 
 ```bash
-pip install solvecaptcha-client
+pip install solvecaptcha
 ```
 
 ## Quick Start

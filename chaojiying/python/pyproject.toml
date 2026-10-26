@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "chaojiying-client"
+name = "chaojiying"
 version = "0.1.0"
 description = "Python client for the Chaojiying (超级鹰) CAPTCHA recognition API"
 readme = "README.md"

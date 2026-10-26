@@ -1,4 +1,4 @@
-# smsbulk-client
+# smsbulk
 
 Python client for the [SMSBulk](https://smsbulk.net) virtual phone number and email verification API.
 
@@ -16,7 +16,7 @@ API Documentation: [https://smsbulk.net/en/docs](https://smsbulk.net/en/docs)
 ## Installation
 
 ```bash
-pip install smsbulk-client
+pip install smsbulk
 ```
 
 ## Quick Start

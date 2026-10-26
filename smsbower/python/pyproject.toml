@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "smsbower-client"
+name = "smsbower"
 version = "0.1.0"
 description = "Python client for the SMSBower virtual number and SMS activation API"
 readme = "README.md"

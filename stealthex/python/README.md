@@ -1,4 +1,4 @@
-# stealthex-client
+# stealthex
 
 Python client for the [StealthEX](https://stealthex.io) cryptocurrency exchange API.
 
@@ -14,7 +14,7 @@ API Documentation: [https://documenter.getpostman.com/view/24333719/2s9YJZ54yN](
 ## Installation
 
 ```bash
-pip install stealthex-client
+pip install stealthex
 ```
 
 ## Quick Start

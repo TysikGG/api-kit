@@ -1,4 +1,4 @@
-# vak-sms-client
+# vak-sms
 
 Python client for the [VAK-SMS API](https://vak-sms.com/en/api/).
 
@@ -12,7 +12,7 @@ Python client for the [VAK-SMS API](https://vak-sms.com/en/api/).
 ## Installation
 
 ```bash
-pip install vak-sms-client
+pip install vak-sms
 ```
 
 ## Quick Start

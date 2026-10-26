@@ -1,4 +1,4 @@
-# simpleswap-client
+# simpleswap
 
 TypeScript client for the [SimpleSwap](https://simpleswap.io) cryptocurrency exchange API (v3).
 
@@ -14,13 +14,13 @@ API Documentation: [https://simpleswap.io/en/affiliate-program/help-center/artic
 ## Installation
 
 ```bash
-npm install simpleswap-client
+npm install simpleswap
 ```
 
 ## Quick Start
 
 ```typescript
-import { SimpleSwap } from "simpleswap-client";
+import { SimpleSwap } from "simpleswap";
 
 const client = new SimpleSwap({
   apiKey: process.env.SIMPLESWAP_API_KEY,

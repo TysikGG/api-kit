@@ -1,4 +1,4 @@
-# chaojiying-client
+# chaojiying
 
 Python client for the [Chaojiying (超级鹰)](https://www.chaojiying.com) CAPTCHA recognition API.
 
@@ -16,7 +16,7 @@ API Documentation: [https://www.chaojiying.com/api-5.html](https://www.chaojiyin
 ## Installation
 
 ```bash
-pip install chaojiying-client
+pip install chaojiying
 ```
 
 ## Quick Start

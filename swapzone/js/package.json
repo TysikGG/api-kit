@@ -1,5 +1,5 @@
 {
-  "name": "swapzone-client",
+  "name": "swapzone",
   "version": "0.1.0",
   "description": "TypeScript client for the Swapzone cryptocurrency exchange and DEX aggregator API",
   "main": "./dist/index.js",
