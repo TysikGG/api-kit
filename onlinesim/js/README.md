@@ -1,8 +1,8 @@
-# onlinesim
+# onlinesim-client
 
-[![npm version](https://img.shields.io/npm/v/onlinesim.svg)](https://www.npmjs.com/package/onlinesim)
+[![npm version](https://img.shields.io/npm/v/onlinesim-client.svg)](https://www.npmjs.com/package/onlinesim-client)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
-[![Node.js Version](https://img.shields.io/node/v/onlinesim.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/onlinesim-client.svg)](https://nodejs.org)
 
 Modern, fully typed TypeScript / Node.js client library for the [OnlineSIM](https://onlinesim.io/docs/api/en) virtual number and SMS activation API.
 
@@ -22,7 +22,7 @@ Official API documentation: <https://onlinesim.io/docs/api/en>
 ## Installation
 
 ```bash
-npm install onlinesim
+npm install onlinesim-client
 ```
 
 Requires Node.js 18 or higher.
@@ -34,7 +34,7 @@ Requires Node.js 18 or higher.
 The quick check only inspects your account balance. It does not order numbers or consume funds:
 
 ```typescript
-import { OnlineSim } from "onlinesim";
+import { OnlineSim } from "onlinesim-client";
 
 const client = new OnlineSim({
   apiKey: process.env.ONLINESIM_API_KEY!,
@@ -53,7 +53,7 @@ console.log(`Current OnlineSIM balance: $${balance.toFixed(2)} USD`);
 Full activation lifecycle: order a number, poll for the verification code, and mark the order complete:
 
 ```typescript
-import { OnlineSim, OnlineSimError } from "onlinesim";
+import { OnlineSim, OnlineSimError } from "onlinesim-client";
 
 const client = new OnlineSim({ apiKey: process.env.ONLINESIM_API_KEY! });
 
@@ -167,7 +167,7 @@ new OnlineSim(options: OnlineSimOptions)
 When the API returns an error response, `OnlineSimError` is thrown:
 
 ```typescript
-import { OnlineSim, OnlineSimError } from "onlinesim";
+import { OnlineSim, OnlineSimError } from "onlinesim-client";
 
 try {
   const client = new OnlineSim({ apiKey: "invalid_key" });

@@ -1,5 +1,5 @@
 {
-  "name": "onlinesim",
+  "name": "onlinesim-client",
   "version": "0.1.0",
   "description": "TypeScript client for the OnlineSIM virtual numbers and SMS verification API",
   "main": "./dist/index.js",

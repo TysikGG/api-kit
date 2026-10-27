@@ -25,7 +25,7 @@ export class OnlineSim {
    *
    * @example
    * ```ts
-   * import { OnlineSim } from 'onlinesim';
+   * import { OnlineSim } from 'onlinesim-client';
    *
    * const client = new OnlineSim({ apiKey: 'YOUR_API_KEY' });
    * ```
