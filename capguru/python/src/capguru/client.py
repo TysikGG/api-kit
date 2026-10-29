@@ -1,29 +1,55 @@
-import json
+"""Synchronous Cap.guru client."""
+
+from __future__ import annotations
+
 import time
+from collections.abc import Callable
 from typing import Any
 
 import httpx
 
-from capguru.errors import CapGuruError
-from capguru.types import GeeTestResult
+from capguru.constants import CLICK, DEFAULT_SOFTGURU, TEXT_INSTRUCTIONS
+from capguru.errors import RETRYABLE_ERROR_CODES, CapGuruError, capguru_error
+from capguru.params import (
+    aws_params,
+    binance_params,
+    click_params,
+    funcaptcha_params,
+    geetest_params,
+    hcaptcha_params,
+    image_file_params,
+    image_params,
+    prefixed_params,
+    recaptcha_v2_params,
+    recaptcha_v3_params,
+    slider_params,
+    temu_params,
+    text_params,
+    tiktok_params,
+    turnstile_params,
+)
+from capguru.parse import (
+    parse_click_answer,
+    parse_geetest,
+    raise_for_http,
+    read_json_task_id,
+    read_json_task_result,
+    read_solution,
+    read_task_id,
+)
+from capguru.types import ClickSolution, GeeTestResult, JsonTaskResult
 
-DEFAULT_SOFTGURU = 164125
+PollCallback = Callable[[dict[str, Any]], None]
+StopCallback = Callable[[], bool]
 
 
 class CapGuruClient:
-    """Client for the CapGuru AI and human-assisted captcha solving API.
+    """Client for the Cap.guru solving API.
 
-    Args:
-        api_key: CapGuru API key.
-        base_url: Base URL for CapGuru API. Defaults to "https://api.cap.guru".
-        timeout: HTTP request timeout in seconds. Defaults to 30.0.
-        default_polling_timeout: Default wait time in seconds for resolution. Defaults to 120.0.
-        default_polling_interval: Default polling interval in seconds. Defaults to 5.0.
+    Supports the RuCaptcha-compatible ``/in.php`` and ``/res.php`` endpoints and
+    the Anti-Captcha compatible ``/createTask`` and ``/getTaskResult`` endpoints.
 
-    Examples:
-        >>> from capguru import CapGuruClient
-        >>> client = CapGuruClient(api_key="your_api_key")
-        >>> balance = client.get_balance()
+    ``softguru`` is always sent as :data:`capguru.constants.DEFAULT_SOFTGURU`.
     """
 
     def __init__(
@@ -33,42 +59,45 @@ class CapGuruClient:
         timeout: float = 30.0,
         default_polling_timeout: float = 120.0,
         default_polling_interval: float = 5.0,
+        *,
+        max_retries: int = 0,
+        retry_delay: float = 0.0,
+        headers: dict[str, str] | None = None,
     ) -> None:
         if not api_key:
-            raise CapGuruError("API key is required", code="MISSING_API_KEY")
+            raise capguru_error("API key is required", code="MISSING_API_KEY")
         self.api_key = api_key
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.default_polling_timeout = default_polling_timeout
         self.default_polling_interval = default_polling_interval
-        self._client = httpx.Client(base_url=self.base_url, timeout=self.timeout)
+        self.max_retries = max(0, max_retries)
+        self.retry_delay = max(0.0, retry_delay)
+        self._client = httpx.Client(base_url=self.base_url, timeout=self.timeout, headers=headers)
 
     def close(self) -> None:
-        """Closes the underlying HTTP client session."""
+        """Close the underlying HTTP client."""
         self._client.close()
 
-    def __enter__(self) -> "CapGuruClient":
+    def __enter__(self) -> CapGuruClient:
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         self.close()
 
     def get_balance(self) -> float:
-        """Retrieves account balance.
-
-        Returns:
-            Current balance as a float.
-
-        Examples:
-            >>> balance = client.get_balance()
-            >>> print(balance)
-            100.0
-        """
-        data = self._query_result({"action": "getbalance"})
+        """Return the account balance."""
+        data = self._query({"action": "getbalance"})
         try:
             return float(data)
-        except (ValueError, TypeError) as exc:
-            raise CapGuruError(f"Failed to parse balance: {data}", code="PARSE_ERROR") from exc
+        except (TypeError, ValueError) as exc:
+            raise capguru_error(
+                f"Failed to parse balance: {data}", code="PARSE_ERROR", response_data=data
+            ) from exc
+
+    def balance(self) -> float:
+        """Alias of :meth:`get_balance`."""
+        return self.get_balance()
 
     def solve_image(
         self,
@@ -81,65 +110,85 @@ class CapGuruClient:
         max_len: int | None = None,
         language: int | None = None,
         textinstructions: str | None = None,
+        vernet: int | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves a normal image captcha from base64 data.
+        """Solve a base64 image captcha."""
+        params = image_params(
+            body,
+            phrase=phrase,
+            regsense=regsense,
+            numeric=numeric,
+            calc=calc,
+            min_len=min_len,
+            max_len=max_len,
+            language=language,
+            textinstructions=textinstructions,
+            vernet=vernet,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
-        Args:
-            body: Base64-encoded image string.
-            phrase: 0 = single word, 1 = multiple words.
-            regsense: 0 = case-insensitive, 1 = case-sensitive.
-            numeric: 0 = any, 1 = digits only, 2 = letters only, 3 = alphanumeric.
-            calc: 0 = normal, 1 = math operation.
-            min_len: Minimum text length.
-            max_len: Maximum text length.
-            language: Language flag (0 = all, 1 = Cyrillic, 2 = Latin).
-            textinstructions: Optional instructions text for workers.
+    def solve_image_file(
+        self,
+        file: bytes,
+        filename: str = "captcha.png",
+        phrase: int | None = None,
+        regsense: int | None = None,
+        numeric: int | None = None,
+        calc: int | None = None,
+        min_len: int | None = None,
+        max_len: int | None = None,
+        language: int | None = None,
+        textinstructions: str | None = None,
+        vernet: int | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> str:
+        """Solve an image uploaded as multipart form data (``method=post``)."""
+        params = image_file_params(
+            phrase=phrase,
+            regsense=regsense,
+            numeric=numeric,
+            calc=calc,
+            min_len=min_len,
+            max_len=max_len,
+            language=language,
+            textinstructions=textinstructions,
+            vernet=vernet,
+            extra=extra,
+        )
+        task_id = self.create_task_multipart(params, file, filename)
+        return self.wait_for_result(task_id, timeout, interval, on_not_ready, should_stop)
 
-        Returns:
-            Recognized captcha text solution.
-
-        Examples:
-            >>> text = client.solve_image(body="iVBORw0KGgoAAA...")
-        """
-        params: dict[str, Any] = {"method": "base64", "body": body}
-        if phrase is not None:
-            params["phrase"] = phrase
-        if regsense is not None:
-            params["regsense"] = regsense
-        if numeric is not None:
-            params["numeric"] = numeric
-        if calc is not None:
-            params["calc"] = calc
-        if min_len is not None:
-            params["min_len"] = min_len
-        if max_len is not None:
-            params["max_len"] = max_len
-        if language is not None:
-            params["language"] = language
-        if textinstructions is not None:
-            params["textinstructions"] = textinstructions
-
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
-
-    def solve_text(self, text: str, language: int | None = None) -> str:
-        """Solves a question-based text captcha.
-
-        Args:
-            text: Question text.
-            language: Language flag (0 = all, 1 = Cyrillic, 2 = Latin).
-
-        Returns:
-            Answer to the question.
-
-        Examples:
-            >>> ans = client.solve_text("If tomorrow is Saturday, what day is today?")
-        """
-        params: dict[str, Any] = {"textcaptcha": text}
-        if language is not None:
-            params["language"] = language
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+    def solve_text(
+        self,
+        text: str,
+        language: int | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> str:
+        """Answer a text question."""
+        return self._solve(
+            text_params(text, language=language, extra=extra),
+            timeout,
+            interval,
+            on_not_ready,
+            should_stop,
+        )
 
     def solve_recaptcha_v2(
         self,
@@ -148,35 +197,31 @@ class CapGuruClient:
         invisible: bool = False,
         data_s: str | None = None,
         enterprise: bool = False,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves Google reCAPTCHA v2.
-
-        Args:
-            googlekey: Sitekey string.
-            pageurl: Full URL of target page.
-            invisible: True for invisible reCAPTCHA.
-            data_s: Optional data-s token parameter.
-            enterprise: True for reCAPTCHA Enterprise.
-
-        Returns:
-            g-recaptcha-response token string.
-
-        Examples:
-            >>> token = client.solve_recaptcha_v2("6Le-wvkSAAAA...", "https://example.com")
-        """
-        params: dict[str, Any] = {
-            "method": "userrecaptcha",
-            "googlekey": googlekey,
-            "pageurl": pageurl,
-        }
-        if invisible:
-            params["invisible"] = 1
-        if data_s is not None:
-            params["data-s"] = data_s
-        if enterprise:
-            params["enterprise"] = 1
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+        """Solve reCAPTCHA v2 and return the ``g-recaptcha-response`` token."""
+        params = recaptcha_v2_params(
+            googlekey,
+            pageurl,
+            invisible=invisible,
+            data_s=data_s,
+            enterprise=enterprise,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
     def solve_recaptcha_v3(
         self,
@@ -184,33 +229,32 @@ class CapGuruClient:
         pageurl: str,
         action: str | None = None,
         min_score: float | None = None,
+        enterprise: bool = False,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves Google reCAPTCHA v3.
-
-        Args:
-            googlekey: Sitekey string.
-            pageurl: Full URL of target page.
-            action: Widget action parameter.
-            min_score: Minimum required score (0.1 to 0.9).
-
-        Returns:
-            Token string.
-
-        Examples:
-            >>> token = client.solve_recaptcha_v3("6LdyC2cUAAAA...", "https://example.com")
-        """
-        params: dict[str, Any] = {
-            "method": "userrecaptcha",
-            "version": "v3",
-            "googlekey": googlekey,
-            "pageurl": pageurl,
-        }
-        if action is not None:
-            params["action"] = action
-        if min_score is not None:
-            params["min_score"] = min_score
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+        """Solve reCAPTCHA v3 and return a token."""
+        params = recaptcha_v3_params(
+            googlekey,
+            pageurl,
+            action=action,
+            min_score=min_score,
+            enterprise=enterprise,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
     def solve_turnstile(
         self,
@@ -218,32 +262,30 @@ class CapGuruClient:
         pageurl: str,
         action: str | None = None,
         data: str | None = None,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves Cloudflare Turnstile.
-
-        Args:
-            sitekey: Turnstile sitekey.
-            pageurl: Target page URL.
-            action: Optional action string.
-            data: Optional cData payload string.
-
-        Returns:
-            Turnstile verification token.
-
-        Examples:
-            >>> token = client.solve_turnstile("0x4AAAA...", "https://example.com")
-        """
-        params: dict[str, Any] = {
-            "method": "turnstile",
-            "sitekey": sitekey,
-            "pageurl": pageurl,
-        }
-        if action is not None:
-            params["action"] = action
-        if data is not None:
-            params["data"] = data
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+        """Solve Cloudflare Turnstile and return a token."""
+        params = turnstile_params(
+            sitekey,
+            pageurl,
+            action=action,
+            data=data,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
     def solve_hcaptcha(
         self,
@@ -251,32 +293,35 @@ class CapGuruClient:
         pageurl: str,
         invisible: bool = False,
         data: str | None = None,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves hCaptcha.
+        """Solve an hCaptcha token task.
 
-        Args:
-            sitekey: Target hCaptcha sitekey.
-            pageurl: Target page URL.
-            invisible: True for invisible hCaptcha.
-            data: Custom rqdata string if required.
-
-        Returns:
-            hCaptcha response token.
-
-        Examples:
-            >>> token = client.solve_hcaptcha("4c672d35-...", "https://example.com")
+        The service currently documents token solving as unavailable. Prefer
+        :meth:`solve_hcaptcha_click`. This method remains for published parameters
+        and existing callers.
         """
-        params: dict[str, Any] = {
-            "method": "hcaptcha",
-            "sitekey": sitekey,
-            "pageurl": pageurl,
-        }
-        if invisible:
-            params["invisible"] = 1
-        if data is not None:
-            params["data"] = data
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+        params = hcaptcha_params(
+            sitekey,
+            pageurl,
+            invisible=invisible,
+            data=data,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
     def solve_funcaptcha(
         self,
@@ -284,32 +329,30 @@ class CapGuruClient:
         pageurl: str,
         surl: str | None = None,
         data: str | None = None,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Solves Arkose Labs FunCaptcha.
-
-        Args:
-            publickey: Public key string.
-            pageurl: Full page URL.
-            surl: FunCaptcha service URL.
-            data: Custom payload data string.
-
-        Returns:
-            FunCaptcha resolution token.
-
-        Examples:
-            >>> token = client.solve_funcaptcha("69A21A01-...", "https://example.com")
-        """
-        params: dict[str, Any] = {
-            "method": "funcaptcha",
-            "publickey": publickey,
-            "pageurl": pageurl,
-        }
-        if surl is not None:
-            params["surl"] = surl
-        if data is not None:
-            params["data"] = data
-        task_id = self.create_task(params)
-        return self.wait_for_result(task_id)
+        """Solve Arkose Labs FunCaptcha and return a token."""
+        params = funcaptcha_params(
+            publickey,
+            pageurl,
+            surl=surl,
+            data=data,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        return self._solve(params, timeout, interval, on_not_ready, should_stop)
 
     def solve_geetest(
         self,
@@ -317,95 +360,431 @@ class CapGuruClient:
         challenge: str,
         pageurl: str,
         api_server: str | None = None,
+        cookies: str | None = None,
+        user_agent: str | None = None,
+        proxy: str | None = None,
+        proxy_type: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> GeeTestResult:
-        """Solves GeeTest v3.
+        """Solve GeeTest v3 and return challenge, validate, and seccode."""
+        params = geetest_params(
+            gt,
+            challenge,
+            pageurl,
+            api_server=api_server,
+            cookies=cookies,
+            user_agent=user_agent,
+            proxy=proxy,
+            proxy_type=proxy_type,
+            extra=extra,
+        )
+        raw = self._solve(params, timeout, interval, on_not_ready, should_stop)
+        return parse_geetest(raw)
 
-        Args:
-            gt: GeeTest gt key.
-            challenge: GeeTest challenge string.
-            pageurl: Target page URL.
-            api_server: Optional api_server subdomain.
+    def solve_click(
+        self,
+        textinstructions: str,
+        click: str,
+        body: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        *,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Solve a generic image-click or slider task."""
+        params = click_params(
+            textinstructions, click, body=body, body0=body0, body1=body1, extra=extra
+        )
+        raw = self._solve(params, timeout, interval, on_not_ready, should_stop)
+        return parse_click_answer(raw)
 
-        Returns:
-            GeeTestResult with challenge, validate, and seccode.
+    def solve_coordinates(self, *args: Any, **kwargs: Any) -> ClickSolution:
+        """Alias of :meth:`solve_click`."""
+        return self.solve_click(*args, **kwargs)
 
-        Examples:
-            >>> res = client.solve_geetest("gt_key", "challenge_str", "https://example.com")
-        """
-        params: dict[str, Any] = {
-            "method": "geetest",
-            "gt": gt,
-            "challenge": challenge,
-            "pageurl": pageurl,
-        }
-        if api_server is not None:
-            params["api_server"] = api_server
-        task_id = self.create_task(params)
-        raw = self.wait_for_result(task_id)
-        try:
-            parsed = json.loads(raw)
-            return GeeTestResult(
-                challenge=str(parsed.get("geetest_challenge") or parsed.get("challenge", "")),
-                validate=str(parsed.get("geetest_validate") or parsed.get("validate", raw)),
-                seccode=str(parsed.get("geetest_seccode") or parsed.get("seccode", "")),
-            )
-        except Exception:
-            return GeeTestResult(challenge="", validate=raw, seccode=f"{raw}|jordan")
+    def solve_recaptcha_click(
+        self,
+        textinstructions: str,
+        body: str | None = None,
+        *,
+        grid: bool = False,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """reCAPTCHA image click. ``grid=True`` requests cell numbers."""
+        click = CLICK["RECAPTCHA_GRID"] if grid else CLICK["RECAPTCHA"]
+        return self.solve_click(
+            textinstructions,
+            click,
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
+
+    def solve_hcaptcha_click(
+        self,
+        textinstructions: str,
+        body: str | None = None,
+        *,
+        grid: bool = False,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """hCaptcha image click. ``grid=True`` requests cell numbers."""
+        click = CLICK["HCAPTCHA_GRID"] if grid else CLICK["HCAPTCHA"]
+        return self.solve_click(
+            textinstructions,
+            click,
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
+
+    def solve_funcaptcha_click(
+        self,
+        textinstructions: str,
+        body: str | None = None,
+        *,
+        grid: bool = False,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """FunCaptcha image click. ``grid=True`` requests cell numbers."""
+        click = CLICK["FUNCAPTCHA_GRID"] if grid else CLICK["FUNCAPTCHA"]
+        return self.solve_click(
+            textinstructions,
+            click,
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
+
+    def solve_geetest_click(
+        self,
+        textinstructions: str,
+        body: str | None = None,
+        *,
+        grid: bool = False,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """GeeTest image click or slider. ``grid=True`` uses ``click=geetest2``."""
+        click = CLICK["GEETEST_GRID"] if grid else CLICK["GEETEST"]
+        return self.solve_click(
+            textinstructions,
+            click,
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
+
+    def solve_binance(
+        self,
+        body: str | None = None,
+        *,
+        object_name: str | None = None,
+        textinstructions: str | None = None,
+        grid: bool = False,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Binance object click. ``object_name='dog'`` is sent as ``binance,dog``."""
+        params = binance_params(
+            body=body,
+            body0=body0,
+            body1=body1,
+            object_name=object_name,
+            textinstructions=textinstructions,
+            grid=grid,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_tiktok(
+        self,
+        *,
+        variant: str = "slider",
+        question: str | None = None,
+        body: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        textinstructions: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """TikTok slider, koleso/kolesso pair, abc, or abc question."""
+        params = tiktok_params(
+            variant=variant,
+            question=question,
+            body=body,
+            body0=body0,
+            body1=body1,
+            textinstructions=textinstructions,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_aws(
+        self,
+        body: str | None = None,
+        *,
+        instruction: str | None = None,
+        textinstructions: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """AWS WAF / Amazon image or slider (``click=oth``)."""
+        params = aws_params(
+            body=body,
+            body0=body0,
+            body1=body1,
+            instruction=instruction,
+            textinstructions=textinstructions,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_temu(
+        self,
+        textinstructions: str,
+        body: str | None = None,
+        *,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Temu image click (``click=temu``)."""
+        params = temu_params(textinstructions, body=body, body0=body0, body1=body1, extra=extra)
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_slider(
+        self,
+        body: str | None = None,
+        *,
+        piece: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        textinstructions: str | None = None,
+        click: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Slider / puzzle. A ``piece`` is sent as ``body1`` with the background in ``body0``."""
+        params = slider_params(
+            body=body,
+            piece=piece,
+            body0=body0,
+            body1=body1,
+            textinstructions=textinstructions,
+            click=click,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_bitget(
+        self,
+        body: str | None = None,
+        *,
+        textinstructions: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Bitget icon captcha (``geetesticonhand``)."""
+        return self.solve_click(
+            textinstructions or TEXT_INSTRUCTIONS["BITGET"],
+            CLICK["GEETEST"],
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
+
+    def solve_linkvertise(
+        self,
+        instruction: str,
+        body: str | None = None,
+        *,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """Linkvertise click (``custom1221,<instruction>``)."""
+        params = prefixed_params(
+            TEXT_INSTRUCTIONS["LINKVERTISE_PREFIX"],
+            instruction,
+            body=body,
+            body0=body0,
+            body1=body1,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_seofast(
+        self,
+        instruction: str,
+        body: str | None = None,
+        *,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """SeoFast / Profitcentr / Seotime (``custom1222,<instruction>``)."""
+        params = prefixed_params(
+            TEXT_INSTRUCTIONS["SEOFAST_PREFIX"],
+            instruction,
+            body=body,
+            body0=body0,
+            body1=body1,
+            extra=extra,
+        )
+        return parse_click_answer(self._solve(params, timeout, interval, on_not_ready, should_stop))
+
+    def solve_worldcash(
+        self,
+        body: str | None = None,
+        *,
+        textinstructions: str | None = None,
+        body0: str | None = None,
+        body1: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> ClickSolution:
+        """World.cash (``textinstructions=custom1224``)."""
+        return self.solve_click(
+            textinstructions or TEXT_INSTRUCTIONS["WORLDCASH"],
+            CLICK["OTHER"],
+            body,
+            body0,
+            body1,
+            extra,
+            timeout=timeout,
+            interval=interval,
+            on_not_ready=on_not_ready,
+            should_stop=should_stop,
+        )
 
     def create_task(self, params: dict[str, Any]) -> str:
-        """Submits a raw task to /in.php.
+        """Submit a raw ``/in.php`` task. ``key``, ``json`` and ``softguru`` are forced."""
+        payload = self._envelope(params)
 
-        Args:
-            params: Task parameters dictionary.
+        def attempt() -> str:
+            data = self._request("POST", "/in.php", params=payload)
+            return read_task_id(data)
 
-        Returns:
-            Assigned task ID string.
+        return self._with_retries(attempt)
 
-        Examples:
-            >>> task_id = client.create_task({"method": "userrecaptcha", ...})
-        """
-        payload: dict[str, Any] = {
-            "key": self.api_key,
-            "softguru": DEFAULT_SOFTGURU,
-            "json": 1,
-            **params,
+    def create_task_multipart(
+        self,
+        params: dict[str, Any],
+        file: bytes,
+        filename: str = "captcha.png",
+        file_field: str = "file",
+    ) -> str:
+        """Submit ``method=post`` as multipart."""
+        payload = {
+            key: str(value) for key, value in self._envelope(params).items() if value is not None
         }
+        files = {file_field: (filename, file, "application/octet-stream")}
 
-        try:
-            resp = self._client.post("/in.php", params=payload)
-        except httpx.RequestError as exc:
-            raise CapGuruError(f"Network error: {exc}", code="NETWORK_ERROR") from exc
+        def attempt() -> str:
+            data = self._request("POST", "/in.php", data=payload, files=files)
+            return read_task_id(data)
 
-        try:
-            data = resp.json()
-        except Exception as exc:
-            raise CapGuruError(f"Invalid JSON: {resp.text}", code="INVALID_RESPONSE") from exc
-
-        if isinstance(data, dict):
-            status = data.get("status")
-            req = data.get("request")
-            if status == 1 and req:
-                return str(req)
-            if status == 0 and req:
-                raise CapGuruError(f"CapGuru error: {req}", code=str(req), response_data=data)
-
-        msg = f"Unexpected response: {data}"
-        raise CapGuruError(msg, code="INVALID_RESPONSE", response_data=data)
+        return self._with_retries(attempt)
 
     def get_task_result(self, task_id: str) -> str | None:
-        """Checks status of a task without blocking.
-
-        Args:
-            task_id: Task ID.
-
-        Returns:
-            Solution string or None if still solving.
-
-        Examples:
-            >>> res = client.get_task_result("123456")
-        """
+        """Return the solution, or ``None`` while the task is ``CAPCHA_NOT_READY``."""
         try:
-            return self._query_result({"action": "get", "id": task_id})
+            return self._query({"action": "get", "id": task_id})
         except CapGuruError as exc:
             if exc.code == "CAPCHA_NOT_READY":
                 return None
@@ -416,88 +795,197 @@ class CapGuruClient:
         task_id: str,
         timeout: float | None = None,
         interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
     ) -> str:
-        """Blocks and polls /res.php until the captcha is solved.
-
-        Args:
-            task_id: Task ID returned by create_task.
-            timeout: Maximum seconds to wait.
-            interval: Polling frequency in seconds.
-
-        Returns:
-            Solved token or text.
-
-        Examples:
-            >>> res = client.wait_for_result("123456")
-        """
-        max_time = timeout if timeout is not None else self.default_polling_timeout
-        poll_interval = interval if interval is not None else self.default_polling_interval
-        deadline = time.time() + max_time
-
-        while time.time() < deadline:
-            time.sleep(poll_interval)
-            res = self.get_task_result(task_id)
-            if res is not None:
-                return res
-
-        raise CapGuruError(f"Timeout waiting for task {task_id}", code="TIMEOUT")
+        """Poll ``/res.php`` until the task is solved or the timeout elapses."""
+        return self._poll(task_id, timeout, interval, on_not_ready, should_stop, json_api=False)
 
     def report_good(self, task_id: str) -> bool:
-        """Reports a correctly solved captcha.
-
-        Args:
-            task_id: Task ID.
-
-        Returns:
-            True if report was accepted.
-
-        Examples:
-            >>> client.report_good("123456")
-        """
-        self._query_result({"action": "reportgood", "id": task_id})
+        """Report a correct solution (``action=reportgood``)."""
+        self._query({"action": "reportgood", "id": task_id})
         return True
+
+    def report_correct(self, task_id: str) -> bool:
+        """Alias of :meth:`report_good`."""
+        return self.report_good(task_id)
 
     def report_bad(self, task_id: str) -> bool:
-        """Reports an incorrectly solved captcha.
-
-        Args:
-            task_id: Task ID.
-
-        Returns:
-            True if report was accepted.
-
-        Examples:
-            >>> client.report_bad("123456")
-        """
-        self._query_result({"action": "reportbad", "id": task_id})
+        """Report an incorrect solution (``action=reportbad``)."""
+        self._query({"action": "reportbad", "id": task_id})
         return True
 
-    def _query_result(self, params: dict[str, Any]) -> str:
-        payload: dict[str, Any] = {
-            "key": self.api_key,
-            "json": 1,
-            **params,
-        }
+    def report_incorrect(self, task_id: str) -> bool:
+        """Alias of :meth:`report_bad`."""
+        return self.report_bad(task_id)
+
+    def create_json_task(
+        self,
+        task: dict[str, Any],
+        *,
+        language_pool: str | None = None,
+        extra: dict[str, Any] | None = None,
+    ) -> str:
+        """Anti-Captcha compatible ``POST /createTask``."""
+        body: dict[str, Any] = {**(extra or {}), "clientKey": self.api_key, "task": task}
+        if language_pool:
+            body["languagePool"] = language_pool
+        body["softId"] = DEFAULT_SOFTGURU
+        body["softguru"] = DEFAULT_SOFTGURU
+
+        def attempt() -> str:
+            data = self._request("POST", "/createTask", json=body)
+            return read_json_task_id(data)
+
+        return self._with_retries(attempt)
+
+    def get_json_task_result(self, task_id: str) -> JsonTaskResult | None:
+        """Anti-Captcha compatible ``POST /getTaskResult``. ``None`` while processing."""
+
+        def attempt() -> JsonTaskResult | None:
+            data = self._request(
+                "POST", "/getTaskResult", json={"clientKey": self.api_key, "taskId": task_id}
+            )
+            return read_json_task_result(task_id, data)
+
+        return self._with_retries(attempt)
+
+    def wait_for_json_result(
+        self,
+        task_id: str,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> JsonTaskResult:
+        """Poll ``/getTaskResult`` until the JSON task is ready."""
+        result = self._poll(task_id, timeout, interval, on_not_ready, should_stop, json_api=True)
+        assert isinstance(result, JsonTaskResult)
+        return result
+
+    def solve_json_task(
+        self,
+        task: dict[str, Any],
+        *,
+        language_pool: str | None = None,
+        extra: dict[str, Any] | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
+        on_not_ready: PollCallback | None = None,
+        should_stop: StopCallback | None = None,
+    ) -> JsonTaskResult:
+        """Create a JSON task and wait for its solution."""
+        task_id = self.create_json_task(task, language_pool=language_pool, extra=extra)
+        return self.wait_for_json_result(task_id, timeout, interval, on_not_ready, should_stop)
+
+    def _solve(
+        self,
+        params: dict[str, Any],
+        timeout: float | None,
+        interval: float | None,
+        on_not_ready: PollCallback | None,
+        should_stop: StopCallback | None,
+    ) -> str:
+        task_id = self.create_task(params)
+        return self.wait_for_result(task_id, timeout, interval, on_not_ready, should_stop)
+
+    def _poll(
+        self,
+        task_id: str,
+        timeout: float | None,
+        interval: float | None,
+        on_not_ready: PollCallback | None,
+        should_stop: StopCallback | None,
+        *,
+        json_api: bool,
+    ) -> str | JsonTaskResult:
+        max_time = self.default_polling_timeout if timeout is None else timeout
+        poll = self.default_polling_interval if interval is None else interval
+        started = time.monotonic()
+        deadline = started + max_time
+        attempt = 0
+        while True:
+            if should_stop and should_stop():
+                raise capguru_error("Polling aborted", code="ABORTED")
+            attempt += 1
+            result = (
+                self.get_json_task_result(task_id) if json_api else self.get_task_result(task_id)
+            )
+            if result is not None:
+                return result
+            if on_not_ready:
+                on_not_ready(
+                    {"task_id": task_id, "attempt": attempt, "elapsed": time.monotonic() - started}
+                )
+            if should_stop and should_stop():
+                raise capguru_error("Polling aborted", code="ABORTED")
+            if time.monotonic() >= deadline:
+                raise capguru_error(f"Timeout waiting for task {task_id}", code="TIMEOUT")
+            remaining = max(0.0, deadline - time.monotonic())
+            time.sleep(min(poll, remaining))
+            if should_stop and should_stop():
+                raise capguru_error("Polling aborted", code="ABORTED")
+
+    def _query(self, params: dict[str, Any]) -> str:
+        payload = {"key": self.api_key, "json": 1, **params}
+
+        def attempt() -> str:
+            data = self._request("GET", "/res.php", params=payload)
+            return read_solution(data)
+
+        return self._with_retries(attempt)
+
+    def _envelope(self, params: dict[str, Any]) -> dict[str, Any]:
+        payload = {key: value for key, value in params.items() if value is not None}
+        payload["key"] = self.api_key
+        payload["json"] = 1
+        payload["softguru"] = DEFAULT_SOFTGURU
+        return payload
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        json: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+        files: dict[str, Any] | None = None,
+    ) -> Any:
         try:
-            resp = self._client.get("/res.php", params=payload)
+            response = self._client.request(
+                method, path, params=params, json=json, data=data, files=files
+            )
         except httpx.RequestError as exc:
-            raise CapGuruError(f"Network error: {exc}", code="NETWORK_ERROR") from exc
+            raise capguru_error(f"{path} request failed: {exc}", code="NETWORK_ERROR") from exc
+        decoded = _decode(response)
+        return raise_for_http(response.status_code, decoded)
 
+    def _with_retries(self, fn: Callable[[], Any]) -> Any:
+        attempts = self.max_retries + 1
+        attempt = 0
+        while True:
+            try:
+                return fn()
+            except CapGuruError as exc:
+                attempt += 1
+                retryable = exc.code in RETRYABLE_ERROR_CODES
+                if not retryable or attempt >= attempts:
+                    raise
+                if self.retry_delay > 0:
+                    time.sleep(self.retry_delay)
+
+
+def _decode(response: httpx.Response) -> Any:
+    text = response.text
+    stripped = text.lstrip()
+    content_type = response.headers.get("content-type", "")
+    if "json" in content_type or stripped.startswith("{") or stripped.startswith("["):
         try:
-            data = resp.json()
+            return response.json()
         except Exception as exc:
-            raise CapGuruError(f"Invalid JSON: {resp.text}", code="INVALID_RESPONSE") from exc
-
-        if isinstance(data, dict):
-            status = data.get("status")
-            req = data.get("request")
-            if status == 1 and req is not None:
-                return str(req)
-            if status == 0 and req:
-                raise CapGuruError(f"CapGuru error: {req}", code=str(req), response_data=data)
-
-        msg = f"Unexpected response: {data}"
-        raise CapGuruError(msg, code="INVALID_RESPONSE", response_data=data)
+            raise capguru_error(f"Invalid JSON: {text}", code="INVALID_RESPONSE") from exc
+    return text
 
 
 CapGuru = CapGuruClient
