@@ -1,6 +1,10 @@
-"""Example checking FixedFloat currencies and price without spending balance."""
+"""Read-only check: currencies, one quote, and the public XML rate for BTC to ETH.
+
+FIXEDFLOAT_API_KEY=... FIXEDFLOAT_API_SECRET=... uv run python examples/check.py
+"""
 
 import os
+import sys
 
 from fixedfloat import FixedFloat
 
@@ -8,27 +12,25 @@ from fixedfloat import FixedFloat
 def main() -> None:
     api_key = os.getenv("FIXEDFLOAT_API_KEY")
     api_secret = os.getenv("FIXEDFLOAT_API_SECRET")
+    if not api_key or not api_secret:
+        print("Set FIXEDFLOAT_API_KEY and FIXEDFLOAT_API_SECRET.", file=sys.stderr)
+        sys.exit(1)
 
     with FixedFloat(api_key=api_key, api_secret=api_secret) as client:
-        print("Fetching currencies from FixedFloat...")
         currencies = client.get_currencies()
-        print(f"Success! Found {len(currencies)} currencies.")
+        print(f"Currencies: {len(currencies)}")
+        btc = next((item for item in currencies if item.code == "BTC"), None)
+        if btc:
+            print(f"{btc.code} {btc.name} recv={btc.recv} send={btc.send}")
 
-        btc = next((c for c in currencies if c.code == "BTC"), None)
-        eth = next((c for c in currencies if c.code == "ETH"), None)
-        if btc and eth:
-            print(f"BTC: {btc.name} (network: {btc.network})")
-            print(f"ETH: {eth.name} (network: {eth.network})")
+        price = client.get_price("BTC", "ETH", 0.01, direction="from", order_type="float")
+        errors = ",".join(price.errors or []) or "none"
+        print(f"0.01 BTC -> {price.to_side.amount} ETH (errors: {errors})")
 
-        print("\nChecking exchange rate for BTC to ETH...")
-        price = client.get_price(
-            from_ccy="BTC",
-            to_ccy="ETH",
-            amount=0.1,
-            direction="from",
-            order_type="float",
-        )
-        print(f"0.1 BTC -> {price.to_side.amount} ETH (Rate: {price.to_side.rate})")
+        rates = client.get_rates(order_type="float", from_ccy="BTC", to_ccy="ETH")
+        if rates:
+            row = rates[0]
+            print(f"XML rate in={row.in_amount} out={row.out_amount} min={row.min_amount}")
 
 
 if __name__ == "__main__":
