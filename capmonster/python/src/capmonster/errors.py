@@ -44,8 +44,19 @@ CAPMONSTER_ERRORS: dict[str, str] = {
     "ERROR_SERVICE_NOT_AVAILABLE": "The service is temporarily unavailable",
     "ERROR_INVALID_TASK": "The task is syntactically valid but contains invalid data",
     "TIMEOUT": "Polling timed out before the captcha was solved",
+    "ABORTED": "The operation was aborted",
     "MISSING_CLIENT_KEY": "Client key is required",
+    "EMPTY_USER_AGENT": "The user-agent endpoint returned an empty body",
 }
+
+# Transport and API codes that are safe to retry. CAPTCHA_NOT_READY is polled, not retried.
+RETRYABLE_ERROR_CODES = (
+    "ERROR_SERVICE_NOT_AVAILABLE",
+    "ERROR_TOO_MUCH_REQUESTS",
+    "ERROR_PROXY_READ_TIMEOUT",
+    "ERROR_PROXY_CONNECT_REFUSED",
+)
+RETRYABLE_HTTP_STATUSES = (429, 502, 503, 504)
 
 
 class CapMonsterError(Exception):
@@ -94,3 +105,103 @@ def describe_error(
     if error_code:
         return error_code
     return f"API error #{error_id}"
+
+
+def _subclass(name: str) -> type[CapMonsterError]:
+    return type(name, (CapMonsterError,), {})
+
+
+KeyDoesNotExistError = _subclass("KeyDoesNotExistError")
+ProxyCredentialsInvalidCharacterError = _subclass("ProxyCredentialsInvalidCharacterError")
+ZeroBalanceError = _subclass("ZeroBalanceError")
+TooBigCaptchaFileSizeError = _subclass("TooBigCaptchaFileSizeError")
+ZeroCaptchaFileSizeError = _subclass("ZeroCaptchaFileSizeError")
+NoSuchCaptchaIdError = _subclass("NoSuchCaptchaIdError")
+WrongCaptchaIdError = _subclass("WrongCaptchaIdError")
+CaptchaUnsolvableError = _subclass("CaptchaUnsolvableError")
+CaptchaNotReadyError = _subclass("CaptchaNotReadyError")
+IpNotAllowedError = _subclass("IpNotAllowedError")
+IpBannedError = _subclass("IpBannedError")
+NoSuchMethodError = _subclass("NoSuchMethodError")
+TooMuchRequestsError = _subclass("TooMuchRequestsError")
+DomainNotAllowedError = _subclass("DomainNotAllowedError")
+TokenExpiredError = _subclass("TokenExpiredError")
+RecaptchaInvalidSitekeyError = _subclass("RecaptchaInvalidSitekeyError")
+RecaptchaInvalidDomainError = _subclass("RecaptchaInvalidDomainError")
+RecaptchaTimeoutError = _subclass("RecaptchaTimeoutError")
+IpBlockedError = _subclass("IpBlockedError")
+ProxyConnectRefusedError = _subclass("ProxyConnectRefusedError")
+ProxyBannedError = _subclass("ProxyBannedError")
+ProxyMissingError = _subclass("ProxyMissingError")
+ProxyNotAuthorisedError = _subclass("ProxyNotAuthorisedError")
+ProxyReadTimeoutError = _subclass("ProxyReadTimeoutError")
+TaskNotSupportedError = _subclass("TaskNotSupportedError")
+TaskAbsentError = _subclass("TaskAbsentError")
+WrongUserAgentError = _subclass("WrongUserAgentError")
+ServiceNotAvailableError = _subclass("ServiceNotAvailableError")
+InvalidTaskError = _subclass("InvalidTaskError")
+TimeoutError = _subclass("TimeoutError")
+AbortedError = _subclass("AbortedError")
+MissingClientKeyError = _subclass("MissingClientKeyError")
+EmptyUserAgentError = _subclass("EmptyUserAgentError")
+
+CAPMONSTER_ERROR_CLASSES: dict[str, type[CapMonsterError]] = {
+    "ERROR_KEY_DOES_NOT_EXIST": KeyDoesNotExistError,
+    "ERROR_PROXY_CREDENTIALS_INVALID_CHARACTER": ProxyCredentialsInvalidCharacterError,
+    "ERROR_ZERO_BALANCE": ZeroBalanceError,
+    "ERROR_TOO_BIG_CAPTCHA_FILESIZE": TooBigCaptchaFileSizeError,
+    "ERROR_ZERO_CAPTCHA_FILESIZE": ZeroCaptchaFileSizeError,
+    "ERROR_NO_SUCH_CAPCHA_ID": NoSuchCaptchaIdError,
+    "WRONG_CAPTCHA_ID": WrongCaptchaIdError,
+    "ERROR_CAPTCHA_UNSOLVABLE": CaptchaUnsolvableError,
+    "CAPTCHA_NOT_READY": CaptchaNotReadyError,
+    "ERROR_IP_NOT_ALLOWED": IpNotAllowedError,
+    "ERROR_IP_BANNED": IpBannedError,
+    "ERROR_NO_SUCH_METHOD": NoSuchMethodError,
+    "ERROR_TOO_MUCH_REQUESTS": TooMuchRequestsError,
+    "ERROR_DOMAIN_NOT_ALLOWED": DomainNotAllowedError,
+    "ERROR_TOKEN_EXPIRED": TokenExpiredError,
+    "ERROR_RECAPTCHA_INVALID_SITEKEY": RecaptchaInvalidSitekeyError,
+    "ERROR_RECAPTCHA_INVALID_DOMAIN": RecaptchaInvalidDomainError,
+    "ERROR_RECAPTCHA_TIMEOUT": RecaptchaTimeoutError,
+    "ERROR_IP_BLOCKED": IpBlockedError,
+    "ERROR_PROXY_CONNECT_REFUSED": ProxyConnectRefusedError,
+    "ERROR_PROXY_BANNED": ProxyBannedError,
+    "ERROR_PROXY_MISSING": ProxyMissingError,
+    "ERROR_PROXY_NOT_AUTHORISED": ProxyNotAuthorisedError,
+    "ERROR_PROXY_READ_TIMEOUT": ProxyReadTimeoutError,
+    "ERROR_TASK_NOT_SUPPORTED": TaskNotSupportedError,
+    "ERROR_TASK_ABSENT": TaskAbsentError,
+    "ERROR_WRONG_USERAGENT": WrongUserAgentError,
+    "ERROR_SERVICE_NOT_AVAILABLE": ServiceNotAvailableError,
+    "ERROR_INVALID_TASK": InvalidTaskError,
+    "TIMEOUT": TimeoutError,
+    "ABORTED": AbortedError,
+    "MISSING_CLIENT_KEY": MissingClientKeyError,
+    "EMPTY_USER_AGENT": EmptyUserAgentError,
+}
+
+
+def create_error(
+    message: str,
+    error_id: int = 0,
+    error_code: str | None = None,
+    status_code: int = 0,
+    response: Any = None,
+) -> CapMonsterError:
+    """Build a code-specific CapMonsterError subclass, or the base class."""
+    cls = CAPMONSTER_ERROR_CLASSES.get(error_code or "", CapMonsterError)
+    return cls(message, error_id, error_code, status_code, response)
+
+
+def is_retryable(err: BaseException) -> bool:
+    """True when another attempt may succeed without changing the request."""
+    if not isinstance(err, CapMonsterError):
+        return False
+    if err.error_code in RETRYABLE_ERROR_CODES:
+        return True
+    if not err.error_code and err.status_code in RETRYABLE_HTTP_STATUSES:
+        return True
+    if not err.error_code and err.status_code == 0 and err.error_id == 0:
+        return True
+    return False
