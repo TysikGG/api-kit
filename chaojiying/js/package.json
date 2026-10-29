@@ -15,8 +15,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "jest --coverage",
+    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/ --coverage=false"
   },
   "repository": {
     "type": "git",
