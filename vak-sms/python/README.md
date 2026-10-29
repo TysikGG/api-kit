@@ -1,12 +1,14 @@
-# vak-sms
+# vaksms-client
 
-[![PyPI version](https://img.shields.io/pypi/v/vak-sms.svg)](https://pypi.org/project/vak-sms/)
+[![PyPI version](https://img.shields.io/pypi/v/vaksms-client.svg)](https://pypi.org/project/vaksms-client/)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
-[![Python Version](https://img.shields.io/pypi/pyversions/vak-sms.svg)](https://pypi.org/project/vak-sms/)
+[![Python Version](https://img.shields.io/pypi/pyversions/vaksms-client.svg)](https://pypi.org/project/vaksms-client/)
 
 Modern, fully typed Python client library for the [VAK-SMS](https://vak-sms.com/api/) virtual phone numbers and SMS OTP receiving service.
 
 Official API documentation: <https://vak-sms.com/api/vak/>
+
+Install as `vaksms-client` (`pip install vaksms-client`); import as `vak_sms`.
 
 ---
 
@@ -22,7 +24,7 @@ Official API documentation: <https://vak-sms.com/api/vak/>
 ## Installation
 
 ```bash
-pip install vak-sms
+pip install vaksms-client
 ```
 
 Requires Python 3.10 or higher.

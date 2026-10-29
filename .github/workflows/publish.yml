@@ -135,18 +135,43 @@ jobs:
 
       - name: Publish to npm if version bumped
         run: |
+          set -eu
           CURRENT_VERSION=$(node -p "require('./package.json').version")
           NAME=$(node -p "require('./package.json').name")
-          NPM_VERSION=$(npm view "$NAME@$CURRENT_VERSION" version 2>/dev/null || echo "none")
+          # registry.npmjs.org expects scoped names as @scope%2Fname
+          ENCODED_NAME=$(node -p "encodeURIComponent(require('./package.json').name).replace(/%40/g, '@')")
+          REGISTRY_URL="https://registry.npmjs.org/${ENCODED_NAME}/${CURRENT_VERSION}"
+          CODE=$(curl -sS -o /tmp/npm-version.json -w "%{http_code}" "$REGISTRY_URL" || echo "000")
           echo "Local version: $CURRENT_VERSION"
-          echo "npm registry version: $NPM_VERSION"
+          echo "npm registry HTTP status for ${NAME}@${CURRENT_VERSION}: $CODE"
 
-          if [ "$CURRENT_VERSION" != "$NPM_VERSION" ]; then
-            echo "Publishing version $CURRENT_VERSION to npm..."
-            npm publish --access public
-          else
+          if [ "$CODE" = "200" ]; then
             echo "Version $CURRENT_VERSION is already published on npm. Skipping publish."
+            exit 0
           fi
+
+          # Fallback: npm view can succeed when the CDN JSON briefly 404s
+          if NPM_VERSION=$(npm view "$NAME@$CURRENT_VERSION" version 2>/dev/null); then
+            if [ "$NPM_VERSION" = "$CURRENT_VERSION" ]; then
+              echo "Version $CURRENT_VERSION is already published on npm (npm view). Skipping publish."
+              exit 0
+            fi
+          fi
+
+          echo "Publishing version $CURRENT_VERSION to npm..."
+          set +e
+          npm publish --access public > /tmp/npm-publish.log 2>&1
+          STATUS=$?
+          set -e
+          cat /tmp/npm-publish.log || true
+          if [ "$STATUS" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -Eqi "cannot publish over the previously published versions|EPUBLISHCONFLICT|previously published" /tmp/npm-publish.log; then
+            echo "Version $CURRENT_VERSION was already published on npm during publish. Treating as success."
+            exit 0
+          fi
+          exit "$STATUS"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -184,20 +209,36 @@ jobs:
 
       - name: Publish to PyPI if version bumped
         run: |
+          set -eu
           CURRENT_VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
           NAME=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['name'])")
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/${NAME}/${CURRENT_VERSION}/json")
+          # Normalize for the JSON API (PyPI treats _ and - as equivalent in URLs)
+          API_NAME=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['name'].replace('_','-'))")
+          CODE=$(curl -sS -o /tmp/pypi-version.json -w "%{http_code}" "https://pypi.org/pypi/${API_NAME}/${CURRENT_VERSION}/json" || echo "000")
           echo "Local version: $CURRENT_VERSION"
           echo "PyPI HTTP status for ${NAME}==${CURRENT_VERSION}: $CODE"
 
-          if [ "$CODE" != "200" ]; then
-            echo "Publishing version $CURRENT_VERSION to PyPI..."
-            if [ -z "${UV_PUBLISH_TOKEN}" ]; then
-              unset UV_PUBLISH_TOKEN
-            fi
-            uv publish
-          else
+          if [ "$CODE" = "200" ]; then
             echo "Version $CURRENT_VERSION is already published on PyPI. Skipping publish."
+            exit 0
           fi
+
+          echo "Publishing version $CURRENT_VERSION to PyPI..."
+          if [ -z "${UV_PUBLISH_TOKEN:-}" ]; then
+            unset UV_PUBLISH_TOKEN
+          fi
+          set +e
+          uv publish > /tmp/pypi-publish.log 2>&1
+          STATUS=$?
+          set -e
+          cat /tmp/pypi-publish.log || true
+          if [ "$STATUS" -eq 0 ]; then
+            exit 0
+          fi
+          if grep -Eqi "File already exists|already exists on the index|previously uploaded" /tmp/pypi-publish.log; then
+            echo "Version $CURRENT_VERSION was already published on PyPI during publish. Treating as success."
+            exit 0
+          fi
+          exit "$STATUS"
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
