@@ -11,7 +11,7 @@ describe("FixedFloat Client", () => {
 
   beforeEach(() => {
     mock = new MockAdapter(axios);
-    client = new FixedFloat({ apiKey, apiSecret });
+    client = new FixedFloat({ apiKey, apiSecret, retries: 0 });
   });
 
   afterEach(() => {
