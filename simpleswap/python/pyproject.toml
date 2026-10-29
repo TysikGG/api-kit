@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "simpleswap-client"
 version = "0.1.0"
-description = "Python client for the SimpleSwap cryptocurrency exchange API (v3)"
+description = "Python client for the SimpleSwap cryptocurrency exchange API (v3): pairs, estimates, swaps, market rates, and deposit confirmation"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "ISC"
@@ -21,6 +21,7 @@ Documentation = "https://simpleswap.io/en/affiliate-program/help-center/article/
 dev = [
   "pytest>=8",
   "pytest-httpx>=0.30",
+  "pytest-cov>=5",
   "ruff>=0.8",
 ]
 
@@ -32,6 +33,7 @@ markers = [
   "live: calls the real SimpleSwap API and needs SIMPLESWAP_API_KEY",
 ]
 testpaths = ["tests"]
+addopts = "--cov=simpleswap --cov-report=term-missing --cov-fail-under=95"
 
 [tool.ruff]
 target-version = "py310"

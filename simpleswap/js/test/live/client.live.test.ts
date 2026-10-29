@@ -23,4 +23,20 @@ describeLive("SimpleSwap live API", () => {
     });
     expect(estimate).toHaveProperty("estimatedAmount");
   });
+
+  test("reads one currency, its pairs, and the deposit range", async () => {
+    const btc = await client.getCurrency("btc", "btc");
+    expect(btc.ticker).toBeTruthy();
+
+    const pairs = await client.getPairs("btc", "btc", { fixed: false });
+    expect(pairs && typeof pairs === "object").toBe(true);
+
+    const ranges = await client.getRanges({
+      tickerFrom: "btc",
+      tickerTo: "eth",
+      networkFrom: "btc",
+      networkTo: "eth",
+    });
+    expect(ranges).toHaveProperty("min");
+  });
 });
