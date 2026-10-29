@@ -12,11 +12,19 @@ class PayPerSolveBalance(TypedDict):
     balance: float
 
 
-class PackageBalance(TypedDict):
-    """Package / subscription balance details."""
+class PackageBalance(TypedDict, total=False):
+    """Package balance.
+
+    Older responses use ``package``. Current responses use ``package_name``,
+    ``remaining_solves``, ``total_solves``, and ``allowed_tasks``.
+    """
 
     type: Literal["package"]
     package: str
+    package_name: str
+    remaining_solves: int
+    total_solves: int
+    allowed_tasks: list[str]
     expires_at: str
     days_remaining: int
 
@@ -31,7 +39,7 @@ class TurnstileResult(TypedDict):
 
 
 class Cloudflare5sAttributes(TypedDict):
-    """Challenge form attributes to POST to target URL."""
+    """Challenge form attributes to POST to the target URL."""
 
     md: str
     r: str
@@ -44,6 +52,42 @@ class Cloudflare5sResult(TypedDict):
     headers: dict[str, str]
     attributes: Cloudflare5sAttributes
     cf_rt: str
+
+
+class AwsWafResult(TypedDict):
+    """Result of an AWS WAF mobile-SDK solve."""
+
+    token: str
+
+
+class ProxyConfig(TypedDict, total=False):
+    """Structured proxy serialized to ``scheme://user:pass@host:port``."""
+
+    protocol: Literal["http", "https", "socks4", "socks5", "socks5h"]
+    host: str
+    port: int
+    username: str
+    password: str
+
+
+class SolveEvent(TypedDict):
+    """Emitted after a solve returns ``success: true``."""
+
+    task_type: str
+    data: Any
+
+
+class ClearanceRequest(TypedDict):
+    """Request pieces for finishing a Cloudflare 5-second challenge."""
+
+    url: str
+    method: Literal["POST"]
+    headers: dict[str, str]
+    body: str
+    cookies: dict[str, str]
+    cookie_header: str
+    referer: str
+    user_agent: str
 
 
 class RawApiResponse(TypedDict, total=False):
