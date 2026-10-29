@@ -6,14 +6,22 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from grizzly_sms.errors import GrizzlySmsError
+from grizzly_sms.errors import GrizzlySmsError, error_from
 from grizzly_sms.types import (
     ActivationStatus,
+    ActivationWebhook,
     ActiveActivation,
     CountryInfo,
+    NumberStock,
     OrderedNumber,
     OrderedNumberV2,
     PriceQuote,
+    RentHistory,
+    RentHistoryEntry,
+    RentMessage,
+    RentPhone,
+    RentPrice,
+    RentStatus,
     ServiceInfo,
 )
 
@@ -217,7 +225,14 @@ def parse_countries(data: Any) -> list[CountryInfo]:
         if not math.isfinite(country_id):
             continue
         names = {lang: _optional_string(item, lang) for lang in _COUNTRY_LANGS}
-        countries.append(CountryInfo(id=int(country_id), **names))
+        countries.append(
+            CountryInfo(
+                id=int(country_id),
+                visible=_optional_int(item, "visible"),
+                retry=_optional_int(item, "retry"),
+                **names,
+            )
+        )
     return countries
 
 
@@ -253,3 +268,161 @@ def parse_activations(data: Any) -> list[ActiveActivation]:
             )
         )
     return activations
+
+
+def _optional_int(row: Mapping[str, Any], key: str) -> int | None:
+    if key not in row or row[key] in (None, ""):
+        return None
+    number = js_number(row[key])
+    if not math.isfinite(number):
+        return None
+    return int(number)
+
+
+def _require_record(data: Any) -> dict[str, Any]:
+    if not isinstance(data, dict):
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    return data
+
+
+def parse_numbers_status(data: Any) -> list[NumberStock]:
+    row = _require_record(data)
+    stocks: list[NumberStock] = []
+    for key, value in row.items():
+        count = js_number(value)
+        if not math.isfinite(count):
+            continue
+        if "_" in str(key):
+            service, suffix = str(key).rsplit("_", 1)
+        else:
+            service, suffix = str(key), ""
+        stocks.append(NumberStock(key=str(key), service=service, suffix=suffix, count=count))
+    return stocks
+
+
+def parse_rent_phone(data: Any) -> RentPhone:
+    row = _require_record(data)
+    phone = row.get("phone")
+    if not isinstance(phone, dict):
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    rent_id = phone.get("id")
+    number = phone.get("number")
+    if isinstance(rent_id, bool) or not isinstance(rent_id, (int, str)):
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    if isinstance(number, bool) or not isinstance(number, (int, str)):
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    end = phone.get("endDate", "")
+    return RentPhone(
+        id=js_string(rent_id),
+        number=js_string(number),
+        end_date="" if end is None else js_string(end),
+    )
+
+
+def _message_list(values: Any) -> list[RentMessage]:
+    if not isinstance(values, dict):
+        return []
+    messages: list[RentMessage] = []
+    for item in values.values():
+        if not isinstance(item, dict):
+            continue
+        text = item.get("text", item.get("test"))
+        messages.append(
+            RentMessage(
+                phone_from=None if "phoneFrom" not in item else js_string(item["phoneFrom"]),
+                service=None if "service" not in item else js_string(item["service"]),
+                text=None if text is None else js_string(text),
+                date=None if "date" not in item else js_string(item["date"]),
+            )
+        )
+    return messages
+
+
+def parse_rent_status(data: Any) -> RentStatus:
+    row = _require_record(data)
+    messages = _message_list(row.get("values"))
+    quantity = _optional_int(row, "quantity")
+    return RentStatus(
+        quantity=float(len(messages) if quantity is None else quantity), messages=messages
+    )
+
+
+def parse_rent_history(data: Any) -> RentHistory:
+    row = _require_record(data)
+    values = row.get("values")
+    entries: list[RentHistoryEntry] = []
+    if isinstance(values, dict):
+        for item in values.values():
+            if not isinstance(item, dict):
+                continue
+            price = js_number(item["price"]) if "price" in item else None
+            hours = js_number(item["hours"]) if "hours" in item else None
+            entries.append(
+                RentHistoryEntry(
+                    date=None if "date" not in item else js_string(item["date"]),
+                    price=None if price is None or not math.isfinite(price) else price,
+                    hours=None if hours is None or not math.isfinite(hours) else hours,
+                )
+            )
+    quantity = _optional_int(row, "quantity")
+    return RentHistory(
+        quantity=float(len(entries) if quantity is None else quantity), entries=entries
+    )
+
+
+def parse_rent_prices(data: Any) -> list[RentPrice]:
+    row = _require_record(data)
+    values = row.get("values")
+    if not isinstance(values, dict):
+        return []
+    quotes: list[RentPrice] = []
+    for country, services in values.items():
+        if not isinstance(services, dict):
+            continue
+        for service, quote in services.items():
+            if not isinstance(quote, dict):
+                continue
+            if "cost" not in quote or "count" not in quote:
+                continue
+            cost = js_number(quote.get("cost"))
+            count = js_number(quote.get("count"))
+            if not math.isfinite(cost) or not math.isfinite(count):
+                continue
+            hours = js_number(quote["max_hours"]) if "max_hours" in quote else None
+            quotes.append(
+                RentPrice(
+                    country=str(country),
+                    service=str(service),
+                    cost=cost,
+                    count=count,
+                    max_hours=None if hours is None or not math.isfinite(hours) else hours,
+                )
+            )
+    return quotes
+
+
+def parse_activation_webhook(data: Any) -> ActivationWebhook:
+    """Parse a profile webhook body.
+
+    Examples:
+        event = parse_activation_webhook({"activationId": 9, "code": "1"})
+    """
+    row = _require_record(data)
+    activation_id = row.get("activationId", row.get("activation_id"))
+    if isinstance(activation_id, bool) or not isinstance(activation_id, (int, str)):
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    received = row.get("receivedAt", row.get("received_at"))
+    return ActivationWebhook(
+        activation_id=js_string(activation_id),
+        service=None if "service" not in row else js_string(row["service"]),
+        text=None if "text" not in row else js_string(row["text"]),
+        code=None if "code" not in row else js_string(row["code"]),
+        country=None if "country" not in row else js_string(row["country"]),
+        received_at=None if received is None else js_string(received),
+    )
+
+
+def expect_rent_success(data: Any) -> str:
+    if not isinstance(data, dict) or data.get("status") != "success":
+        raise error_from("UNEXPECTED_RESPONSE", data)
+    return "success"
