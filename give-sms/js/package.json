@@ -1,7 +1,7 @@
 {
   "name": "give-sms",
   "version": "0.1.0",
-  "description": "TypeScript client for the Give-SMS virtual number and SMS activation API",
+  "description": "TypeScript client for the Give-SMS virtual number, rental, and SMS activation API",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,8 +15,10 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
+    "test": "jest --coverage --coverageReporters=text --coverageReporters=text-summary",
+    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit"
   },
   "repository": {
     "type": "git",

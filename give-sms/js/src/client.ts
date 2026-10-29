@@ -1,499 +1,671 @@
-import axios, { AxiosInstance } from 'axios';
-import { GiveSmsError } from './errors.js';
-import {
-  ActivationNumber,
-  ApiResponse,
-  CodeResult,
-  GetCountOptions,
-  GetNumberOptions,
-  GiveSmsOptions,
-  HandlerStatusResult,
-} from './types.js';
+import axios, { type AxiosInstance, type AxiosProxyConfig, isAxiosError } from "axios";
 
-/** @internal */
-export const PARTNER_KEY = 'pk_39579ba6dfd61e59';
+import {
+  GiveSmsAbortError,
+  GiveSmsError,
+  GiveSmsTimeoutError,
+  NetworkError,
+  ResendRequiredError,
+} from "./errors.js";
+import {
+  assertEnvelope,
+  cleanParams,
+  joinServices,
+  parseAccessNumber,
+  parseActivation,
+  parseBalance,
+  parseCode,
+  parseHandlerBalance,
+  parseHandlerStatus,
+  parseJsonText,
+  parseRentOrder,
+  parseRentProlong,
+  parseRentSms,
+  throwIfHandlerError,
+} from "./parse.js";
+import {
+  API_V1_PATH,
+  DEFAULT_BASE_URL,
+  HANDLER_PATH,
+  HandlerSetStatus,
+  RENT_PATH,
+  type ActivationNumber,
+  type ApiResponse,
+  type CodeResult,
+  type GetCountOptions,
+  type GetNumberOptions,
+  type GiveSmsOptions,
+  type HandlerGetNumberOptions,
+  type HandlerNumbersStatusOptions,
+  type HandlerPricesOptions,
+  type HandlerStatusResult,
+  type ReactivationOptions,
+  type ReactivationResult,
+  type RentDataOptions,
+  type RentOrder,
+  type RentOrderOptions,
+  type RentProlongOptions,
+  type RentProlongResult,
+  type RentSmsList,
+  type RentWaitOptions,
+  type WaitOptions,
+} from "./types.js";
+
+/** @internal Partner attribution. Do not change. */
+export const PARTNER_KEY = "pk_39579ba6dfd61e59";
+
+const WAITING_HANDLER_STATUSES = new Set(["STATUS_WAIT_CODE", "STATUS_WAIT_RETRY"]);
+
+export interface ReactivateOptions {
+  /** Minutes. Must be one of the durations from {@link GiveSms.getReactivationOptions}. */
+  duration?: number;
+  /** Expected price. The server rejects the call with status 507 / `price_changed` if it moved. */
+  price?: number;
+}
 
 /**
- * Client for interacting with the Give-SMS API.
+ * Client for the Give-SMS native JSON API, the SMS-Activate compatible handler,
+ * and the long-term number rent API.
+ *
+ * @example
+ * ```ts
+ * const client = new GiveSms({ apiKey: process.env.GIVE_SMS_API_KEY! });
+ * const balance = await client.getBalance();
+ * ```
  */
+/** Native order bound to the client that created it. */
+export class Activation {
+  public constructor(
+    public readonly client: GiveSms,
+    public readonly id: string | number,
+    public readonly number: string,
+    public readonly startTime?: string,
+  ) {}
+
+  public getCode(): Promise<CodeResult> {
+    return this.client.getCode(this.id);
+  }
+
+  public waitForCode(options?: WaitOptions): Promise<CodeResult> {
+    return this.client.waitForCode(this.id, options);
+  }
+
+  public wrongCode(lastId?: string | number): Promise<CodeResult> {
+    return this.client.wrongCode(this.id, lastId);
+  }
+
+  public repeatCode(lastId?: string | number): Promise<boolean> {
+    return this.client.repeatCode(this.id, lastId);
+  }
+
+  public cancel(): Promise<boolean> {
+    return this.client.cancelNumber(this.id);
+  }
+
+  public ban(): Promise<boolean> {
+    return this.client.banNumber(this.id);
+  }
+}
+
 export class GiveSms {
   private readonly client: AxiosInstance;
   private readonly apiKey: string;
+  private readonly retries: number;
+  private readonly retryDelayMs: number;
+  private readonly retryOn: Array<string | number>;
 
-  /**
-   * Creates an instance of GiveSms.
-   *
-   * @param options - Configuration options or API key string.
-   *
-   * @example
-   * ```ts
-   * import { GiveSms } from 'give-sms';
-   *
-   * const client = new GiveSms({ apiKey: 'YOUR_API_KEY' });
-   * ```
-   */
   public constructor(options: string | GiveSmsOptions) {
-    const config = typeof options === 'string' ? { apiKey: options } : options;
+    const config = typeof options === "string" ? { apiKey: options } : options;
     if (!config.apiKey) {
-      throw new GiveSmsError('API key is required');
+      throw new GiveSmsError("API key is required");
     }
     this.apiKey = config.apiKey;
+    this.retries = config.retries ?? 0;
+    this.retryDelayMs = config.retryDelayMs ?? 1000;
+    this.retryOn = config.retryOn ?? [502, "ERROR_SQL"];
     this.client = axios.create({
-      baseURL: config.baseUrl ?? 'https://give-sms.com',
-      timeout: config.timeout ?? 30000,
+      baseURL: (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, ""),
+      timeout: config.timeout ?? 30_000,
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "User-Agent": "give-sms/0.1.0",
+        ...config.headers,
+      },
+      proxy: config.proxy ? parseProxy(config.proxy) : undefined,
+      validateStatus: () => true,
     });
   }
 
   /**
-   * Retrieves the current account balance via the native JSON API (/api/v1/).
-   *
-   * @returns Current account balance.
-   *
-   * @example
-   * ```ts
-   * const balance = await client.getBalance();
-   * console.log(`Balance: ${balance}`);
-   * ```
+   * Low-level native `/api/v1/` call. `partner_key` is always attached.
+   * Status `400` is returned (not thrown) only when listed in `allowStatuses`.
    */
-  public async getBalance(): Promise<number> {
-    const res = await this.callApi<Record<string, unknown>>('getbalance');
-    const balanceVal = (res.data as any)?.balance ?? (res.data as any)?.user_balance ?? res.data;
-    const balanceNum = typeof balanceVal === 'number' ? balanceVal : parseFloat(String(balanceVal));
-    if (isNaN(balanceNum)) {
-      throw new GiveSmsError('Invalid balance received from API', undefined, res);
-    }
-    return balanceNum;
+  public async callApi<T = unknown>(
+    method: string,
+    extraParams: Record<string, unknown> = {},
+    allowStatuses: number[] = [],
+  ): Promise<ApiResponse<T>> {
+    return this.withRetry(() => this.callApiOnce<T>(method, extraParams, allowStatuses));
   }
 
   /**
-   * Retrieves the count of available numbers for services via /api/v1/.
-   *
-   * @param options - Optional filters by country and operator.
-   * @returns Map of service codes to availability info or counts.
-   *
-   * @example
-   * ```ts
-   * const counts = await client.getCount({ country: 'kazakhstan' });
-   * console.log(counts);
-   * ```
+   * Low-level `/stubs/handler_api.php` call. Returns the trimmed plain-text body.
+   * Known error tokens are thrown as {@link GiveSmsError} subclasses.
    */
-  public async getCount(options?: GetCountOptions): Promise<Record<string, unknown>> {
-    const params: Record<string, unknown> = {};
-    if (options?.country) {
-      params.country = options.country;
+  public async callHandler(
+    action: string,
+    extraParams: Record<string, unknown> = {},
+  ): Promise<string> {
+    return this.withRetry(() => this.callHandlerOnce(action, extraParams));
+  }
+
+  /** Account balance from `method=getbalance`. */
+  public async getBalance(): Promise<number> {
+    const res = await this.callApi<unknown>("getbalance");
+    return parseBalance(res.data);
+  }
+
+  /** Available services, counts, and prices grouped by operator (`method=getcount`). */
+  public async getCount(options: GetCountOptions = {}): Promise<Record<string, unknown>> {
+    const res = await this.callApi<Record<string, unknown>>("getcount", {
+      country: options.country,
+      operator: options.operator,
+    });
+    const data = res.data;
+    if (data === null || typeof data !== "object" || Array.isArray(data)) {
+      throw new GiveSmsError("Unexpected getcount payload", undefined, data);
     }
-    if (options?.operator) {
-      params.operator = options.operator;
-    }
-    const res = await this.callApi<Record<string, unknown>>('getcount', params);
+    return data;
+  }
+
+  /**
+   * Every country and the services available in it (`method=getallcount`).
+   * Pass `service` to get price and count for that service in each country.
+   */
+  public async getAllCount(options: { service?: string } = {}): Promise<unknown> {
+    const res = await this.callApi("getallcount", { service: options.service });
     return res.data;
   }
 
-  /**
-   * Orders a phone number for the specified service via /api/v1/.
-   *
-   * @param options - Order parameters including service and optional country.
-   * @returns Order details with ID and allocated phone number.
-   *
-   * @example
-   * ```ts
-   * const order = await client.getNumber({ service: 'vk', country: 'kazakhstan' });
-   * console.log(`Ordered ${order.number} with ID ${order.id}`);
-   * ```
-   */
-  public async getNumber(options: GetNumberOptions): Promise<ActivationNumber> {
-    const params: Record<string, unknown> = {
-      service: options.service,
-    };
-    if (options.country !== undefined) {
-      params.country = options.country;
-    }
-    if (options.operator !== undefined) {
-      params.operator = options.operator;
-    }
-    if (options.maxPrice !== undefined) {
-      params.maxPrice = options.maxPrice;
-    }
+  /** Alias of {@link getAllCount}. Kept for compatibility with give-sms 0.1. */
+  public async getAll(options: { service?: string } = {}): Promise<unknown> {
+    return this.getAllCount(options);
+  }
 
-    const res = await this.callApi<{ id?: string | number; number?: string; phone?: string }>('getnumber', params);
-    const id = res.data?.id;
-    const number = res.data?.number ?? res.data?.phone;
-    if (!id || !number) {
-      throw new GiveSmsError('Incomplete number data returned by API', undefined, res);
+  /** Order a number (`method=getnumber`). The number is reserved for about 15 minutes. */
+  public async getNumber(options: GetNumberOptions): Promise<ActivationNumber> {
+    if (!options.service) {
+      throw new GiveSmsError("service is required");
     }
-    return { id, number };
+    const res = await this.callApi("getnumber", {
+      service: options.service,
+      country: options.country,
+      operator: options.operator,
+      maxPrice: options.maxPrice,
+    });
+    return parseActivation(res.data);
   }
 
   /**
-   * Gets the SMS code or status for an ordered number via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns Verification code and status.
-   *
-   * @example
-   * ```ts
-   * const res = await client.getCode('123456');
-   * if (res.code) {
-   *   console.log(`Received code: ${res.code}`);
-   * }
-   * ```
+   * Read the SMS for an order (`method=getcode`).
+   * Status `400` means the SMS has not arrived yet and is returned as `status: "WAIT"`.
    */
   public async getCode(id: string | number): Promise<CodeResult> {
-    const res = await this.callApi<Record<string, unknown>>('getcode', { id });
-    const data = res.data as any;
-    return {
-      code: data?.code,
-      status: String(data?.status ?? 'WAIT'),
-      extra: data,
-    };
+    const res = await this.callApi("getcode", { order_id: id }, [400]);
+    return parseCode(res);
   }
 
   /**
-   * Requests a repeat SMS code for an activation via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns True if successful.
-   *
-   * @example
-   * ```ts
-   * await client.repeatCode('123456');
-   * ```
+   * Ask for another SMS on the same order (`method=wrongcode`).
+   * `lastId` is the `smsId` from the previous message. It defaults to the order id.
    */
-  public async repeatCode(id: string | number): Promise<boolean> {
-    await this.callApi('repeatcode', { id });
+  public async wrongCode(id: string | number, lastId?: string | number): Promise<CodeResult> {
+    const res = await this.callApi(
+      "wrongcode",
+      { order_id: id, last_id: lastId ?? id },
+      [400],
+    );
+    return parseCode(res);
+  }
+
+  /**
+   * Request another SMS. Returns `true` when the API accepts the request
+   * (including "SMS not here yet"). Prefer {@link wrongCode} to read the payload.
+   */
+  public async repeatCode(id: string | number, lastId?: string | number): Promise<boolean> {
+    await this.wrongCode(id, lastId);
     return true;
   }
 
-  /**
-   * Cancels an active number order via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns True if cancellation succeeded.
-   *
-   * @example
-   * ```ts
-   * await client.cancelNumber('123456');
-   * ```
-   */
+  /** Cancel an order and release the reserved balance (`method=refusenumber`). */
   public async cancelNumber(id: string | number): Promise<boolean> {
-    await this.callApi('cancelnumber', { id });
+    await this.callApi("refusenumber", { order_id: id });
     return true;
   }
 
-  /**
-   * Marks a number as banned / blacklisted via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns True if successfully marked.
-   *
-   * @example
-   * ```ts
-   * await client.banNumber('123456');
-   * ```
-   */
+  /** Alias of {@link cancelNumber}. */
+  public async refuseNumber(id: string | number): Promise<boolean> {
+    return this.cancelNumber(id);
+  }
+
+  /** Ban a number that cannot be used for the service (`method=bannumber`). */
   public async banNumber(id: string | number): Promise<boolean> {
-    await this.callApi('bannumber', { id });
+    await this.callApi("bannumber", { order_id: id });
     return true;
   }
 
-  /**
-   * Retrieves reactivation options for a previously used number via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns Reactivation options details.
-   *
-   * @example
-   * ```ts
-   * const options = await client.getReactivationOptions('123456');
-   * console.log(options);
-   * ```
-   */
-  public async getReactivationOptions(id: string | number): Promise<unknown> {
-    const res = await this.callApi('getreactivationoptions', { id });
+  /** Durations and prices for reopening a finished order (`method=reactivationoptions`). */
+  public async getReactivationOptions(id: string | number): Promise<ReactivationOptions> {
+    const res = await this.callApi<ReactivationOptions>("reactivationoptions", { order_id: id });
     return res.data;
   }
 
-  /**
-   * Re-activates a previously ordered number via /api/v1/.
-   *
-   * @param id - Activation ID.
-   * @returns Re-activation details.
-   *
-   * @example
-   * ```ts
-   * const res = await client.reactivate('123456');
-   * console.log(res);
-   * ```
-   */
-  public async reactivate(id: string | number): Promise<unknown> {
-    const res = await this.callApi('reactivation', { id });
-    return res.data;
+  /** Alias of {@link getReactivationOptions}. */
+  public async reactivationOptions(id: string | number): Promise<ReactivationOptions> {
+    return this.getReactivationOptions(id);
   }
 
   /**
-   * Retrieves all active orders for the user account via /api/v1/.
-   *
-   * @returns Active orders list.
-   *
-   * @example
-   * ```ts
-   * const orders = await client.getAll();
-   * console.log(orders);
-   * ```
+   * Reopen a finished order (`method=reactivation`).
+   * The price is charged immediately and is not refunded. The response contains a new order id.
    */
-  public async getAll(): Promise<unknown> {
-    const res = await this.callApi('getall');
+  public async reactivate(
+    id: string | number,
+    options: ReactivateOptions = {},
+  ): Promise<ReactivationResult> {
+    const res = await this.callApi<ReactivationResult>("reactivation", {
+      order_id: id,
+      duration: options.duration,
+      price: options.price,
+    });
     return res.data;
   }
 
-  /**
-   * Retrieves account balance using the SMS-Activate compatible handler endpoint.
-   *
-   * @returns Current account balance.
-   *
-   * @example
-   * ```ts
-   * const balance = await client.handlerGetBalance();
-   * console.log(`Balance: ${balance}`);
-   * ```
-   */
+  /** Order a number and return a helper bound to this client. */
+  public async purchase(options: GetNumberOptions): Promise<Activation> {
+    const ordered = await this.getNumber(options);
+    return new Activation(this, ordered.id, ordered.number, ordered.startTime);
+  }
+
+  /** Poll {@link getCode} until an SMS arrives, the order dies, or the timeout elapses. */
+  public async waitForCode(id: string | number, options: WaitOptions = {}): Promise<CodeResult> {
+    return this.poll(
+      () => this.getCode(id),
+      (result) => result.status !== "WAIT",
+      options,
+      "SMS code",
+    );
+  }
+
+  /** Poll {@link wrongCode} until the next SMS arrives. */
+  public async waitForNextCode(
+    id: string | number,
+    lastId?: string | number,
+    options: WaitOptions = {},
+  ): Promise<CodeResult> {
+    return this.poll(
+      () => this.wrongCode(id, lastId),
+      (result) => result.status !== "WAIT",
+      options,
+      "next SMS code",
+    );
+  }
+
+  /** Handler API balance (`action=getBalance`). */
   public async handlerGetBalance(): Promise<number> {
-    const text = await this.callHandler('getBalance');
-    if (!text.startsWith('ACCESS_BALANCE:')) {
-      throw new GiveSmsError(`Unexpected balance response: ${text}`, text);
-    }
-    const val = parseFloat(text.substring('ACCESS_BALANCE:'.length));
-    if (isNaN(val)) {
-      throw new GiveSmsError(`Invalid balance format: ${text}`, text);
-    }
-    return val;
+    return parseHandlerBalance(await this.callHandler("getBalance"));
   }
 
-  /**
-   * Retrieves service availability counts via handler endpoint.
-   *
-   * @param options - Optional country and operator filters.
-   * @returns Record of service codes to available quantity.
-   *
-   * @example
-   * ```ts
-   * const status = await client.handlerGetNumbersStatus();
-   * console.log(status);
-   * ```
-   */
-  public async handlerGetNumbersStatus(options?: {
-    country?: string | number;
-    operator?: string;
-  }): Promise<Record<string, number>> {
-    const params: Record<string, unknown> = {};
-    if (options?.country !== undefined) {
-      params.country = options.country;
+  /** Handler counts (`action=getNumbersStatus`). */
+  public async handlerGetNumbersStatus(
+    options: HandlerNumbersStatusOptions = {},
+  ): Promise<Record<string, number>> {
+    const text = await this.callHandler("getNumbersStatus", {
+      country: options.country,
+      operator: options.operator,
+    });
+    const parsed = parseJsonText(text, "getNumbersStatus");
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new GiveSmsError(`Unexpected getNumbersStatus payload: ${text}`, text, text);
     }
-    if (options?.operator !== undefined) {
-      params.operator = options.operator;
-    }
-    const text = await this.callHandler('getNumbersStatus', params);
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new GiveSmsError(`Invalid JSON from handler getNumbersStatus: ${text}`, text);
-    }
+    return parsed as Record<string, number>;
   }
 
-  /**
-   * Orders a phone number using the handler endpoint.
-   *
-   * @param options - Service, country, operator and price parameters.
-   * @returns Activation ID and allocated phone number.
-   *
-   * @example
-   * ```ts
-   * const num = await client.handlerGetNumber({ service: 'vk', country: 2 });
-   * console.log(`Ordered ${num.number} (ID: ${num.id})`);
-   * ```
-   */
-  public async handlerGetNumber(options: {
-    service: string;
-    country?: string | number;
-    operator?: string;
-    maxPrice?: number;
-  }): Promise<ActivationNumber> {
-    const params: Record<string, unknown> = {
+  /** Handler number order (`action=getNumber` → `ACCESS_NUMBER:id:number`). */
+  public async handlerGetNumber(options: HandlerGetNumberOptions): Promise<ActivationNumber> {
+    if (!options.service) {
+      throw new GiveSmsError("service is required");
+    }
+    const text = await this.callHandler("getNumber", {
       service: options.service,
-    };
-    if (options.country !== undefined) {
-      params.country = options.country;
-    }
-    if (options.operator !== undefined) {
-      params.operator = options.operator;
-    }
-    if (options.maxPrice !== undefined) {
-      params.maxPrice = options.maxPrice;
-    }
-
-    const text = await this.callHandler('getNumber', params);
-    if (!text.startsWith('ACCESS_NUMBER:')) {
-      throw new GiveSmsError(`Failed to order number: ${text}`, text);
-    }
-    const parts = text.split(':');
-    if (parts.length < 3) {
-      throw new GiveSmsError(`Malformed ACCESS_NUMBER response: ${text}`, text);
-    }
-    return {
-      id: parts[1],
-      number: parts[2],
-    };
+      country: options.country,
+      operator: options.operator,
+      maxPrice: options.maxPrice,
+    });
+    return parseAccessNumber(text);
   }
 
-  /**
-   * Sets the status of an activation via the handler endpoint.
-   *
-   * @param id - Activation ID.
-   * @param status - Target status code (e.g., 1 = ready, 3 = request retry, 6 = finish, 8 = cancel).
-   * @returns API status message.
-   *
-   * @example
-   * ```ts
-   * const res = await client.handlerSetStatus('12345', 1);
-   * console.log(res);
-   * ```
-   */
+  /** Handler `action=setStatus`. */
   public async handlerSetStatus(id: string | number, status: number): Promise<string> {
-    return this.callHandler('setStatus', { id, status });
+    return this.callHandler("setStatus", { id, status });
   }
 
-  /**
-   * Checks the status and SMS code of an activation via the handler endpoint.
-   *
-   * @param id - Activation ID.
-   * @returns Status code and received code if available.
-   *
-   * @example
-   * ```ts
-   * const status = await client.handlerGetStatus('12345');
-   * if (status.code) {
-   *   console.log(`Code: ${status.code}`);
-   * }
-   * ```
-   */
+  /** Tell the service the number is ready for an SMS (`status=1`). */
+  public async handlerReady(id: string | number): Promise<string> {
+    return this.handlerSetStatus(id, HandlerSetStatus.Ready);
+  }
+
+  /** Request another free SMS (`status=3`). */
+  public async handlerRequestAnotherSms(id: string | number): Promise<string> {
+    return this.handlerSetStatus(id, HandlerSetStatus.RequestAnotherSms);
+  }
+
+  /** Finish the activation (`status=6`). */
+  public async handlerComplete(id: string | number): Promise<string> {
+    return this.handlerSetStatus(id, HandlerSetStatus.Complete);
+  }
+
+  /** Cancel the activation (`status=8`). */
+  public async handlerCancel(id: string | number): Promise<string> {
+    return this.handlerSetStatus(id, HandlerSetStatus.Cancel);
+  }
+
+  /** Handler activation state (`action=getStatus`). */
   public async handlerGetStatus(id: string | number): Promise<HandlerStatusResult> {
-    const text = await this.callHandler('getStatus', { id });
-    if (text.startsWith('STATUS_OK:')) {
-      return { status: 'STATUS_OK', code: text.substring('STATUS_OK:'.length) };
-    }
-    if (text.startsWith('STATUS_WAIT_RETRY:')) {
-      return { status: 'STATUS_WAIT_RETRY', code: text.substring('STATUS_WAIT_RETRY:'.length) };
-    }
-    return { status: text };
+    return parseHandlerStatus(await this.callHandler("getStatus", { id }));
   }
 
   /**
-   * Retrieves price catalog via handler endpoint.
-   *
-   * @param options - Optional filters.
-   * @returns Price directory.
-   *
-   * @example
-   * ```ts
-   * const prices = await client.handlerGetPrices({ country: 2 });
-   * console.log(prices);
-   * ```
+   * Poll the handler until `STATUS_OK`.
+   * `STATUS_CANCEL` and `STATUS_WAIT_RESEND` are thrown immediately.
    */
-  public async handlerGetPrices(options?: {
-    country?: string | number;
-    service?: string;
-    tiers?: number;
-  }): Promise<unknown> {
-    const params: Record<string, unknown> = {};
-    if (options?.country !== undefined) {
-      params.country = options.country;
-    }
-    if (options?.service !== undefined) {
-      params.service = options.service;
-    }
-    if (options?.tiers !== undefined) {
-      params.tiers = options.tiers;
-    }
-    const text = await this.callHandler('getPrices', params);
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new GiveSmsError(`Invalid JSON from handler getPrices: ${text}`, text);
-    }
-  }
-
-  private async callApi<T = unknown>(method: string, extraParams: Record<string, unknown> = {}): Promise<ApiResponse<T>> {
-    try {
-      const response = await this.client.get<ApiResponse<T>>('/api/v1/', {
-        params: {
-          method,
-          userkey: this.apiKey,
-          partner_key: PARTNER_KEY,
-          ...extraParams,
-        },
-      });
-
-      const body = response.data;
-      if (typeof body === 'object' && body !== null && 'status' in body) {
-        if (body.status !== 200 && (body.status as unknown as number) !== 1) {
-          const errMsg = (body.data as any)?.msg || (body.data as any)?.error || `API returned status ${body.status}`;
-          throw new GiveSmsError(errMsg, body.status, body);
+  public async handlerWaitForCode(
+    id: string | number,
+    options: WaitOptions = {},
+  ): Promise<HandlerStatusResult> {
+    return this.poll(
+      () => this.handlerGetStatus(id),
+      (result) => {
+        if (result.status === "STATUS_CANCEL") {
+          throw new GiveSmsError("Activation cancelled", "STATUS_CANCEL", result.raw);
         }
-      }
-      return body;
-    } catch (err: any) {
-      if (err instanceof GiveSmsError) {
-        throw err;
-      }
-      const status = err.response?.status;
-      const data = err.response?.data;
-      const msg = data?.data?.msg || data?.msg || err.message || 'Request failed';
-      throw new GiveSmsError(msg, status, data);
-    }
-  }
-
-  private async callHandler(action: string, extraParams: Record<string, unknown> = {}): Promise<string> {
-    try {
-      const response = await this.client.get<string>('/stubs/handler_api.php', {
-        params: {
-          action,
-          api_key: this.apiKey,
-          partner_key: PARTNER_KEY,
-          ...extraParams,
-        },
-        responseType: 'text',
-      });
-
-      const text = String(response.data).trim();
-      const errorCodes = [
-        'BAD_KEY',
-        'NO_KEY',
-        'ERROR_SQL',
-        'BAD_ACTION',
-        'BAD_SERVICE',
-        'NO_ACTIVATION',
-        'BAD_STATUS',
-        'NO_BALANCE',
-        'NO_NUMBERS',
-        'WRONG_SERVICE',
-        'BAD_COUNTRY',
-        'YOU_TEMPORARY_BANNED',
-      ];
-
-      for (const errCode of errorCodes) {
-        if (text === errCode || text.startsWith(`${errCode}:`)) {
-          throw new GiveSmsError(`API error: ${text}`, text);
+        if (result.status === "STATUS_WAIT_RESEND") {
+          throw new ResendRequiredError(
+            "The service must resend the SMS, then set status to 6",
+            "STATUS_WAIT_RESEND",
+            result.raw,
+          );
         }
-      }
+        return !WAITING_HANDLER_STATUSES.has(result.status);
+      },
+      options,
+      "handler SMS code",
+    );
+  }
 
-      return text;
-    } catch (err: any) {
-      if (err instanceof GiveSmsError) {
-        throw err;
+  /** Price catalog (`action=getPrices`). Use `tiers: 1` for every price level. */
+  public async handlerGetPrices(options: HandlerPricesOptions = {}): Promise<unknown> {
+    const text = await this.callHandler("getPrices", {
+      country: options.country,
+      service: options.service,
+      tiers: options.tiers,
+    });
+    return parseJsonText(text, "getPrices");
+  }
+
+  /** Handler reactivation quote (`action=getReactivationOptions`). Map of minutes → price. */
+  public async handlerGetReactivationOptions(id: string | number): Promise<Record<string, number>> {
+    const text = await this.callHandler("getReactivationOptions", { id });
+    const parsed = parseJsonText(text, "getReactivationOptions");
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new GiveSmsError(`Unexpected reactivation options: ${text}`, text, text);
+    }
+    return parsed as Record<string, number>;
+  }
+
+  /** Handler reactivation (`action=reactivation` → new `ACCESS_NUMBER`). */
+  public async handlerReactivate(
+    id: string | number,
+    duration: number,
+    price?: number,
+  ): Promise<ActivationNumber> {
+    const text = await this.callHandler("reactivation", { id, duration, price });
+    return parseAccessNumber(text);
+  }
+
+  /** Rent catalog for one country (`method=getdatacountry`). */
+  public async rentGetDataCountry(options: RentDataOptions): Promise<Record<string, unknown>> {
+    return this.rentData("getdatacountry", { country: options.country });
+  }
+
+  /** Rent countries and operators (`method=countries`). */
+  public async rentCountries(): Promise<Record<string, unknown>> {
+    return this.rentData("countries");
+  }
+
+  /** All rent orders, active and finished (`method=allorders`). */
+  public async rentAllOrders(): Promise<Record<string, unknown>> {
+    return this.rentData("allorders");
+  }
+
+  /**
+   * Rent a number for weeks or months (`method=createorder`).
+   * Rentals are not refundable.
+   */
+  public async rentCreateOrder(options: RentOrderOptions): Promise<RentOrder> {
+    const res = await this.callRent("createorder", {
+      type: options.type,
+      period: options.period,
+      services: joinServices(options.services),
+      country: options.country,
+      operator: options.operator,
+    });
+    return parseRentOrder(res.data);
+  }
+
+  /** SMS received on a rented number (`method=getsms`). */
+  public async rentGetSms(rentId: string | number): Promise<RentSmsList> {
+    const res = await this.callRent("getsms", { rentid: rentId });
+    return parseRentSms(res.data);
+  }
+
+  /** Extend a rental (`method=prolong`). */
+  public async rentProlong(options: RentProlongOptions): Promise<RentProlongResult> {
+    const res = await this.callRent("prolong", {
+      rentid: options.rentId,
+      type: options.type,
+      period: options.period,
+    });
+    return parseRentProlong(res.data);
+  }
+
+  /** Poll {@link rentGetSms} until a message arrives. */
+  public async rentWaitForSms(
+    rentId: string | number,
+    options: RentWaitOptions = {},
+  ): Promise<RentSmsList> {
+    return this.poll(
+      () => this.rentGetSms(rentId),
+      (page) => {
+        const fresh =
+          options.since === undefined
+            ? page.messages
+            : page.messages.filter((item) => (item.timestamp ?? 0) > options.since!);
+        return fresh.length > 0;
+      },
+      options,
+      "rented-number SMS",
+    );
+  }
+
+  private async rentData(
+    method: string,
+    extra: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown>> {
+    const res = await this.callRent<Record<string, unknown>>(method, extra);
+    if (res.data === null || typeof res.data !== "object" || Array.isArray(res.data)) {
+      throw new GiveSmsError(`Unexpected ${method} payload`, res.status, res.data);
+    }
+    return res.data;
+  }
+
+  private async callRent<T = unknown>(
+    method: string,
+    extraParams: Record<string, unknown> = {},
+  ): Promise<ApiResponse<T>> {
+    return this.withRetry(() => this.callRentOnce<T>(method, extraParams));
+  }
+
+  private async callApiOnce<T>(
+    method: string,
+    extraParams: Record<string, unknown>,
+    allowStatuses: number[],
+  ): Promise<ApiResponse<T>> {
+    const response = await this.send(API_V1_PATH, {
+      ...cleanParams(extraParams),
+      method,
+      userkey: this.apiKey,
+      partner_key: PARTNER_KEY,
+    });
+    return assertEnvelope<T>(response.data, allowStatuses);
+  }
+
+  private async callRentOnce<T>(
+    method: string,
+    extraParams: Record<string, unknown>,
+  ): Promise<ApiResponse<T>> {
+    const response = await this.send(RENT_PATH, {
+      ...cleanParams(extraParams),
+      method,
+      userkey: this.apiKey,
+      partner_key: PARTNER_KEY,
+    });
+    return assertEnvelope<T>(response.data, []);
+  }
+
+  private async callHandlerOnce(
+    action: string,
+    extraParams: Record<string, unknown>,
+  ): Promise<string> {
+    const response = await this.send(
+      HANDLER_PATH,
+      {
+        ...cleanParams(extraParams),
+        action,
+        api_key: this.apiKey,
+        partner_key: PARTNER_KEY,
+      },
+      "text",
+    );
+    const text =
+      typeof response.data === "string" ? response.data.trim() : JSON.stringify(response.data);
+    if (response.status >= 400 && !text) {
+      throw new GiveSmsError(`Handler request failed with HTTP ${response.status}`, response.status);
+    }
+    throwIfHandlerError(text);
+    return text;
+  }
+
+  private async send(
+    path: string,
+    params: Record<string, unknown>,
+    responseType?: "text",
+  ) {
+    try {
+      return await this.client.get(path, { params, responseType });
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        const code = err.code === "ECONNABORTED" ? "TIMEOUT" : "NETWORK";
+        const Cls = code === "TIMEOUT" ? GiveSmsTimeoutError : NetworkError;
+        throw new Cls(err.message || "Request failed");
       }
-      const status = err.response?.status;
-      const data = err.response?.data;
-      throw new GiveSmsError(err.message || 'Handler request failed', status, data);
+      throw new NetworkError(err instanceof Error ? err.message : "Request failed");
     }
   }
+
+  private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await operation();
+      } catch (err: unknown) {
+        if (attempt >= this.retries || !this.isRetryable(err)) {
+          throw err;
+        }
+        await delay(this.retryDelayMs * (attempt + 1));
+      }
+    }
+  }
+
+  private isRetryable(err: unknown): boolean {
+    if (!(err instanceof GiveSmsError) || err.code === undefined) {
+      return false;
+    }
+    if (err.code === "NETWORK" || err.code === "TIMEOUT") {
+      return true;
+    }
+    return this.retryOn.some((code) => code === err.code || String(code) === String(err.code));
+  }
+
+  private async poll<T>(
+    read: () => Promise<T>,
+    ready: (value: T) => boolean,
+    options: WaitOptions,
+    label: string,
+  ): Promise<T> {
+    const timeoutMs = options.timeoutMs ?? 180_000;
+    const intervalMs = options.intervalMs ?? 5_000;
+    const started = Date.now();
+    for (;;) {
+      if (options.signal?.aborted) {
+        throw new GiveSmsAbortError("Operation aborted");
+      }
+      const value = await read();
+      if (ready(value)) {
+        return value;
+      }
+      const elapsed = Date.now() - started;
+      if (elapsed >= timeoutMs) {
+        throw new GiveSmsTimeoutError(`Timed out after ${timeoutMs}ms waiting for ${label}`);
+      }
+      await delay(Math.min(intervalMs, timeoutMs - elapsed), options.signal);
+    }
+  }
+}
+
+function parseProxy(proxy: string): AxiosProxyConfig {
+  let url: URL;
+  try {
+    url = new URL(proxy);
+  } catch {
+    throw new GiveSmsError(`Invalid proxy URL: ${proxy}`);
+  }
+  const config: AxiosProxyConfig = {
+    protocol: url.protocol.replace(":", "") || "http",
+    host: url.hostname,
+    port: Number(url.port || (url.protocol === "https:" ? 443 : 80)),
+  };
+  if (url.username) {
+    config.auth = {
+      username: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+    };
+  }
+  return config;
+}
+
+function delay(ms: number, signal?: AbortSignal): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new GiveSmsAbortError("Operation aborted"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
 }

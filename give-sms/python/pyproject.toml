@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "give-sms"
 version = "0.1.0"
-description = "Python client for the Give-SMS virtual number and SMS activation API"
+description = "Python client for the Give-SMS virtual number, rental, and SMS activation API"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "ISC"
@@ -20,6 +20,7 @@ Documentation = "https://give-sms.com/api.html"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-cov>=6",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -32,6 +33,11 @@ markers = [
   "live: calls the real Give-SMS API and needs GIVE_SMS_API_KEY",
 ]
 testpaths = ["tests"]
+addopts = "--cov=give_sms --cov-report=term-missing --cov-fail-under=95"
+
+[tool.coverage.run]
+source = ["give_sms"]
+branch = false
 
 [tool.ruff]
 target-version = "py310"
