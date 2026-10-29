@@ -14,4 +14,11 @@ module.exports = {
     ],
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/test/live/'],
+  collectCoverageFrom: ['src/**/*.ts'],
+  coverageDirectory: 'coverage',
+  coverageThreshold: {
+    global: {
+      lines: 95,
+    },
+  },
 };

@@ -15,8 +15,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "jest --coverage",
+    "test:live": "jest --coverage=false --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
   },
   "repository": {
     "type": "git",
@@ -29,7 +30,11 @@
     "recaptcha",
     "turnstile",
     "hcaptcha",
-    "funcaptcha"
+    "funcaptcha",
+    "geetest",
+    "tiktok",
+    "aws-waf",
+    "slider-captcha"
   ],
   "license": "ISC",
   "engines": {
