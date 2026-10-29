@@ -23,6 +23,7 @@ import type {
   TenDITask,
   TemuTask,
   TspdTask,
+  ProxyFields,
   TurnstileTask,
   YidunTask,
 } from "./types.js";
@@ -167,4 +168,84 @@ export function huntTask(task: WithoutTypeAndClass<HuntTask>): HuntTask {
 /** Build an Alibaba custom task. */
 export function alibabaTask(task: WithoutTypeAndClass<AlibabaTask>): AlibabaTask {
   return { type: "CustomTask", class: "alibaba", ...task };
+}
+
+/** Legacy proxyless reCAPTCHA v2 type name. Current docs use `RecaptchaV2Task`. */
+export function recaptchaV2ProxylessTask(
+  task: WithoutType<RecaptchaV2Task>,
+): RecaptchaV2Task {
+  return { type: "RecaptchaV2TaskProxyless", ...task };
+}
+
+/** Legacy `NoCaptchaTask` alias of reCAPTCHA v2. */
+export function noCaptchaTask(task: WithoutType<RecaptchaV2Task>): RecaptchaV2Task {
+  return { type: "NoCaptchaTask", ...task };
+}
+
+/** Legacy `NoCaptchaTaskProxyless` alias of reCAPTCHA v2. */
+export function noCaptchaProxylessTask(task: WithoutType<RecaptchaV2Task>): RecaptchaV2Task {
+  return { type: "NoCaptchaTaskProxyless", ...task };
+}
+
+/** hCaptcha using the proxyless type name. */
+export function hCaptchaProxylessTask(task: WithoutType<HCaptchaTask>): HCaptchaTask {
+  return { type: "HCaptchaTaskProxyless", ...task };
+}
+
+/** GeeTest v3. `challenge` is required by the API and must be fresh. */
+export function geeTestV3Task(task: WithoutType<GeeTestTask>): GeeTestTask {
+  return { version: "3", ...task, type: "GeeTestTask" };
+}
+
+/** GeeTest v4. Pass `gt` as the captcha id. `challenge` is not used. */
+export function geeTestV4Task(task: WithoutType<GeeTestTask>): GeeTestTask {
+  return { version: "4", ...task, type: "GeeTestTask" };
+}
+
+/** Cloudflare Challenge that returns a Turnstile token (`cloudflareTaskType: token`). */
+export function turnstileChallengeTokenTask(task: WithoutType<TurnstileTask>): TurnstileTask {
+  return { ...task, type: "TurnstileTask", cloudflareTaskType: "token" };
+}
+
+/** Cloudflare Challenge that returns a `cf_clearance` cookie. Requires your proxy. */
+export function turnstileChallengeCookieTask(task: WithoutType<TurnstileTask>): TurnstileTask {
+  return { ...task, type: "TurnstileTask", cloudflareTaskType: "cf_clearance" };
+}
+
+/** Cloudflare Waiting Room (`cloudflareTaskType: wait_room`). Requires your proxy. */
+export function turnstileWaitingRoomTask(task: WithoutType<TurnstileTask>): TurnstileTask {
+  return { ...task, type: "TurnstileTask", cloudflareTaskType: "wait_room" };
+}
+
+/** ComplexImageTask for a reCAPTCHA click / grid image. */
+export function complexRecaptchaTask(
+  task: WithoutTypeAndClass<ComplexImageTask>,
+): ComplexImageTask {
+  return { type: "ComplexImageTask", class: "recaptcha", ...task };
+}
+
+/** ComplexImageTask for an hCaptcha image. */
+export function complexHCaptchaTask(
+  task: WithoutTypeAndClass<ComplexImageTask>,
+): ComplexImageTask {
+  return { type: "ComplexImageTask", class: "hcaptcha", ...task };
+}
+
+/** ComplexImageTask for a FunCaptcha image. */
+export function complexFunCaptchaTask(
+  task: WithoutTypeAndClass<ComplexImageTask>,
+): ComplexImageTask {
+  return { type: "ComplexImageTask", class: "funcaptcha", ...task };
+}
+
+/** ComplexImageTask for a generic recognition image (BLS, Shein, and similar). */
+export function complexRecognitionTask(
+  task: WithoutTypeAndClass<ComplexImageTask>,
+): ComplexImageTask {
+  return { type: "ComplexImageTask", class: "recognition", ...task };
+}
+
+/** Copy proxy fields onto a task object. */
+export function withProxy<T extends object>(task: T, proxy: ProxyFields): T & ProxyFields {
+  return { ...task, ...proxy };
 }
