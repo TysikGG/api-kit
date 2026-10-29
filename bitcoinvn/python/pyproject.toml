@@ -20,6 +20,7 @@ Documentation = "https://bitcoinvn.io/api/doc.json"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-cov>=5",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -32,6 +33,14 @@ markers = [
   "live: calls the real BitcoinVN API and needs BITCOINVN_API_KEY",
 ]
 testpaths = ["tests"]
+addopts = "--cov=bitcoinvn --cov-report=term-missing --cov-fail-under=95"
+
+[tool.coverage.run]
+branch = true
+source = ["bitcoinvn"]
+
+[tool.coverage.report]
+show_missing = true
 
 [tool.ruff]
 target-version = "py310"

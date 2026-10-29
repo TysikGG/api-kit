@@ -1,5 +1,27 @@
-export { BitcoinVn, REFERRER } from "./client.js";
-export { BitcoinVnError } from "./errors.js";
+export {
+  BitcoinVn,
+  DEFAULT_WAIT_STATUSES,
+  LEDGER_PAGE_SIZE,
+  ORDER_STATUSES,
+  ORDERS_PAGE_SIZE,
+  REFERRER,
+} from "./client.js";
+export {
+  BitcoinVnBadRequestError,
+  BitcoinVnConflictError,
+  BitcoinVnError,
+  BitcoinVnForbiddenError,
+  BitcoinVnMaintenanceError,
+  BitcoinVnNotFoundError,
+  BitcoinVnRateLimitError,
+  BitcoinVnServerError,
+  BitcoinVnTimeoutError,
+  BitcoinVnTransportError,
+  BitcoinVnUnauthorizedError,
+  BitcoinVnUnprocessableEntityError,
+} from "./errors.js";
+export { readWebhook, verifyWebhookSignature, webhookSignature } from "./webhook.js";
+export type { WebhookRead } from "./webhook.js";
 
 export type {
   AddressValidation,
@@ -22,6 +44,8 @@ export type {
   InternalBalanceSettleData,
   LedgerItem,
   LightningSettleData,
+  ListAllLedgerParams,
+  ListAllOrdersParams,
   ListOrdersParams,
   MemoSettleData,
   Order,
@@ -31,13 +55,16 @@ export type {
   Pair,
   Quote,
   QuotedOrderRequest,
+  RateLimit,
   SettleDataCorrection,
   SettleDataField,
   SubmitDepositParams,
+  SwapOptions,
   TaggedAddressSettleData,
   Ticker,
   TransferMethod,
   TransferMethodDetails,
   Vault,
   VndBankSettleData,
+  WaitForOrderParams,
 } from "./types.js";
