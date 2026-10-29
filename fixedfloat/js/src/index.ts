@@ -1,19 +1,49 @@
-export { FixedFloat, DEFAULT_REFCODE } from "./client.js";
-export { FixedFloatError } from "./errors.js";
+export { FixedFloat, DEFAULT_REFCODE, proxyConfigFromUrl } from "./client.js";
+export {
+  FixedFloatApiError,
+  FixedFloatAuthError,
+  FixedFloatError,
+  FixedFloatHttpError,
+  FixedFloatNetworkError,
+  FixedFloatRateLimitError,
+  FixedFloatTimeoutError,
+  isFixedFloatError,
+} from "./errors.js";
+export {
+  assertQuoteOk,
+  filterRates,
+  ORDER_STATUS_TEXT,
+  orderStatusText,
+  parsePriceShorthand,
+  parseRatesXml,
+  PRICE_ERROR_TEXT,
+  TERMINAL_ORDER_STATUSES,
+} from "./rates.js";
 export {
   ApiResponse,
   CreateOrderParams,
   Currency,
   EmergencyChoice,
+  EmergencyChoiceState,
+  EmergencyStatus,
   ExchangeDirection,
   FixedFloatOptions,
   GetPriceParams,
+  GetRatesOptions,
   Order,
+  OrderEmergency,
   OrderSide,
+  OrderStatus,
   OrderTx,
   OrderType,
+  PriceCurrencyAvailability,
+  PriceErrorCode,
   PriceResult,
   PriceSide,
+  QrCode,
   QrResult,
+  RateItem,
+  RawRequestOptions,
   SetEmergencyParams,
+  WaitForOrderOptions,
 } from "./types.js";

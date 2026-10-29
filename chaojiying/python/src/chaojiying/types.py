@@ -1,27 +1,27 @@
-from typing_extensions import TypedDict
+"""Dictionary results that also support attribute access."""
+
+from __future__ import annotations
+
+from typing import Any
 
 
-class ScoreResult(TypedDict):
-    """Result of account score query."""
+class AttrDict(dict[str, Any]):
+    """Mapping returned by the client. ``result["pic_str"]`` and ``result.pic_str`` both work."""
 
-    err_no: int
-    err_str: str
-    tifen: int
-    tifen_lock: int
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return self[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
 
 
-class RecognizeResult(TypedDict, total=False):
+class ScoreResult(AttrDict):
+    """Result of an account score query."""
+
+
+class RecognizeResult(AttrDict):
     """Result of CAPTCHA recognition."""
 
-    err_no: int
-    err_str: str
-    pic_id: str
-    pic_str: str
-    md5: str
 
-
-class ReportErrorResult(TypedDict):
-    """Result of mistake report."""
-
-    err_no: int
-    err_str: str
+class ReportErrorResult(AttrDict):
+    """Result of a mistake report."""

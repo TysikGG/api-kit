@@ -6,7 +6,22 @@ export interface GrizzlySmsOptions {
   /** Default `https://api.grizzlysms.com`. */
   baseUrl?: string;
   timeoutMs?: number;
-  /** Inject a custom axios instance (tests, proxies). */
+  /**
+   * Extra attempts after a failed read. Default `0`.
+   * Network errors, HTTP 408/429/5xx, and `ERROR_SQL` / `SERVER_ERROR` are retried.
+   * `getNumber`, `setStatus`, and rent purchases are not retried unless `retryMutations` is set.
+   */
+  retries?: number;
+  /** Delay before a retry. Default `1000`. */
+  retryDelayMs?: number;
+  /** Also retry number purchases and status changes. Default `false`. */
+  retryMutations?: boolean;
+  /**
+   * HTTP proxy URL, for example `http://user:pass@127.0.0.1:8080`.
+   * Ignored when `axios` is set; configure the agent on that instance instead.
+   */
+  proxy?: string;
+  /** Inject a custom axios instance (tests, proxies, mTLS). */
   axios?: AxiosInstance;
 }
 
@@ -30,8 +45,8 @@ export type ActivationActionValue =
 export interface GetNumberParams {
   service: string;
   /**
-   * Country id. `"any"` or omitting the field lets Grizzly pick a country
-   * by stock, price, and deliverability.
+   * Country id. `"any"`, `"*"`, or omitting the field lets Grizzly pick a
+   * country by stock, price, and deliverability.
    */
   country?: string | number;
   maxPrice?: number;
@@ -43,6 +58,20 @@ export interface GetNumberParams {
    * number mask, for example `1628` or `147220`.
    */
   phoneException?: ReadonlyArray<string> | string;
+  /** Mobile operator code when the country exposes one. */
+  operator?: string;
+  /** Ask for a number that can forward calls. `0` or `1`. */
+  forward?: number | boolean;
+  /** Activation type filter documented by the sms-activate-compatible protocol. */
+  activationType?: number;
+}
+
+export interface GetBalanceOptions {
+  /**
+   * Pass `2` to request the reserve-aware balance (`version=2`).
+   * The returned number is still the first amount in `ACCESS_BALANCE`.
+   */
+  version?: number;
 }
 
 export interface OrderedNumber {
@@ -142,6 +171,10 @@ export interface CountryInfo {
   hin?: string;
   ara?: string;
   fra?: string;
+  /** `1` when the country is shown in the catalog. */
+  visible?: number;
+  /** `1` when another SMS can be requested for numbers in this country. */
+  retry?: number;
 }
 
 export interface ActiveActivation {
@@ -183,6 +216,126 @@ export interface WaitForCodeOptions {
   intervalMs?: number;
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** Called with every poll result, including wait states. */
+  onStatus?: (status: ActivationStatus) => void;
+}
+
+export interface ActivateOptions extends WaitForCodeOptions {
+  /** Call `ready` (status `1`) before polling. Default `true`. */
+  ready?: boolean;
+  /** Cancel the number when the wait times out. Default `false`. */
+  cancelOnTimeout?: boolean;
+  /** Cancel the number when waiting fails for a reason other than timeout. */
+  cancelOnError?: boolean;
+}
+
+export interface ActivationResult {
+  order: OrderedNumberV2;
+  code: string;
+  status: "STATUS_OK";
+}
+
+export interface ReceivedMessage {
+  code: string;
+  text?: string;
+  /** `sms` or `call`, from `getStatusV2`. */
+  source: "sms" | "call";
+  verificationType?: number;
+}
+
+export interface WaitForMessageOptions {
+  intervalMs?: number;
+  timeoutMs?: number;
+  signal?: AbortSignal;
+  onStatus?: (status: ActivationStatusV2) => void;
+}
+
+export interface NumbersStatusParams {
+  country?: string | number;
+  /** Operator code, or several codes separated by commas. */
+  operator?: string;
+}
+
+/** One key from `getNumbersStatus`, for example `tg_0`. */
+export interface NumberStock {
+  key: string;
+  service: string;
+  /** Suffix after the service code. `0` means no redirect. */
+  suffix: string;
+  count: number;
+}
+
+export const RentAction = {
+  /** Finish the rental. */
+  Finish: 1,
+  /** Cancel the rental. */
+  Cancel: 2,
+} as const;
+
+export type RentActionValue = (typeof RentAction)[keyof typeof RentAction];
+
+export interface RentNumberParams {
+  service: string;
+  country: string | number;
+  /** Hours. The documented minimum is 4. */
+  rentTime: number;
+}
+
+export interface RentPhone {
+  id: string;
+  number: string;
+  endDate: string;
+}
+
+export interface RentMessage {
+  phoneFrom?: string;
+  service?: string;
+  text?: string;
+  date?: string;
+}
+
+export interface RentStatus {
+  quantity: number;
+  messages: RentMessage[];
+}
+
+export interface RentHistoryEntry {
+  date?: string;
+  price?: number;
+  hours?: number;
+}
+
+export interface RentHistory {
+  quantity: number;
+  entries: RentHistoryEntry[];
+}
+
+export interface RentPrice {
+  country: string;
+  service: string;
+  cost: number;
+  count: number;
+  maxHours?: number;
+}
+
+export interface RentPricesParams {
+  service?: string;
+  country?: string | number;
+  /** Hours. The documented minimum is 4. */
+  rentTime?: number;
+}
+
+/**
+ * Body posted to a profile webhook URL.
+ * Grizzly stores up to three URLs and uses the sms-activate-compatible shape.
+ */
+export interface ActivationWebhook {
+  activationId: string;
+  service?: string;
+  text?: string;
+  code?: string;
+  country?: string;
+  receivedAt?: string;
 }
 
 export interface ReceivedCode {

@@ -20,6 +20,8 @@ Documentation = "https://fixedfloat.com/api"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=6",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -29,9 +31,19 @@ packages = ["src/fixedfloat"]
 
 [tool.pytest.ini_options]
 markers = [
-  "live: calls the real FixedFloat API",
+  "live: calls the real FixedFloat API (needs FIXEDFLOAT_API_KEY and FIXEDFLOAT_API_SECRET)",
 ]
 testpaths = ["tests"]
+addopts = "--cov=fixedfloat --cov-report=term-missing --cov-fail-under=95"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/fixedfloat"]
+branch = false
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
 
 [tool.ruff]
 target-version = "py310"

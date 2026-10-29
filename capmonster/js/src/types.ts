@@ -34,6 +34,34 @@ export interface CapMonsterOptions {
 
   /** Custom Axios instance, useful for testing or custom proxies. */
   axios?: AxiosInstance;
+
+  /**
+   * Extra attempts for transient network failures and retryable API codes
+   * (`ERROR_SERVICE_NOT_AVAILABLE`, `ERROR_TOO_MUCH_REQUESTS`, proxy connect
+   * and read timeouts, HTTP 429/502/503/504). Defaults to 0.
+   */
+  retries?: number;
+
+  /** Base delay before a retry, multiplied by the attempt number. Defaults to 1000ms. */
+  retryDelayMs?: number;
+
+  /**
+   * Absolute URL of the current User-Agent endpoint.
+   * Defaults to `https://capmonster.cloud/api/useragent/actual`.
+   */
+  userAgentUrl?: string;
+
+  /** Append `__nocache` to the client key so tokens are not reused. */
+  nocache?: boolean;
+
+  /**
+   * Append `__recognizingthreshold_{n}` to the client key.
+   * Applies to ImageToText when the task itself does not set `recognizingThreshold`.
+   */
+  recognizingThreshold?: number;
+
+  /** Append `__moduleName` to the client key (ImageToText module shortcut). */
+  moduleName?: string;
 }
 
 /** Account balance returned by `getBalance`. */
@@ -62,6 +90,8 @@ export interface RecaptchaV2Task extends ProxyFields {
   userAgent?: string;
   cookies?: string;
   isInvisible?: boolean;
+  /** When true, CapMonster does not reuse a cached token. */
+  nocache?: boolean;
 }
 
 /** reCAPTCHA v2 Enterprise. */
@@ -75,6 +105,8 @@ export interface RecaptchaV2EnterpriseTask extends ProxyFields {
   pageAction?: string;
   apiDomain?: string;
   cookies?: string;
+  /** When true, CapMonster does not reuse a cached token. */
+  nocache?: boolean;
 }
 
 /** reCAPTCHA v3 (proxyless). Set `isEnterprise` to solve v3 Enterprise with this shape. */
@@ -85,6 +117,8 @@ export interface RecaptchaV3Task {
   minScore?: number;
   pageAction?: string;
   isEnterprise?: boolean;
+  /** When true, CapMonster does not reuse a cached token. */
+  nocache?: boolean;
 }
 
 /** reCAPTCHA v3 Enterprise. */
@@ -95,6 +129,8 @@ export interface RecaptchaV3EnterpriseTask {
   minScore?: number;
   pageAction?: string;
   userAgent?: string;
+  /** When true, CapMonster does not reuse a cached token. */
+  nocache?: boolean;
 }
 
 /**
@@ -109,7 +145,7 @@ export interface TurnstileTask extends ProxyFields {
   pageAction?: string;
   data?: string;
   pageData?: string;
-  cloudflareTaskType?: "token" | "cf_clearance";
+  cloudflareTaskType?: "token" | "cf_clearance" | "wait_room";
   htmlPageBase64?: string;
   apiJsUrl?: string;
 }
@@ -442,8 +478,73 @@ export interface WaitForOptions {
   /** Maximum wait time in milliseconds before timing out. Defaults to 120000ms. */
   timeoutMs?: number;
 
+  /** Delay before the first `getTaskResult` call. Defaults to 0. */
+  initialDelayMs?: number;
+
+  /**
+   * Stop after this many `getTaskResult` calls.
+   * The API allows 120 result requests per task.
+   */
+  maxAttempts?: number;
+
   /** Optional AbortSignal to cancel polling. */
   signal?: AbortSignal;
+
+  /** Called after every poll, including the ready result. */
+  onPoll?: (update: PollUpdate) => void;
+}
+
+/** Snapshot passed to `onPoll`. */
+export interface PollUpdate<T = unknown> {
+  taskId: number;
+  attempt: number;
+  status: TaskStatus;
+  solution?: T;
+}
+
+/** Task id plus solution from `solveDetailed`. */
+export interface SolveResult<T = Record<string, unknown>> {
+  taskId: number;
+  solution: T;
+}
+
+/** Accepted report from `reportIncorrect*`. */
+export interface ReportResult {
+  status: "success";
+}
+
+/** Token returned for reCAPTCHA v2, v3, and Enterprise. */
+export interface RecaptchaSolution {
+  gRecaptchaResponse: string;
+  userAgent?: string;
+}
+
+/** Cloudflare Turnstile token or Challenge / Waiting Room cookie. */
+export interface TurnstileSolution {
+  token?: string;
+  cf_clearance?: string;
+  userAgent?: string;
+}
+
+/** ImageToText recognition result. */
+export interface ImageToTextSolution {
+  text: string;
+}
+
+/** GeeTest v3 tokens. */
+export interface GeeTestV3Solution {
+  challenge: string;
+  validate: string;
+  seccode: string;
+}
+
+/** GeeTest v4 tokens. */
+export interface GeeTestV4Solution {
+  captcha_id: string;
+  lot_number: string;
+  pass_token: string;
+  gen_time: string;
+  captcha_output: string;
 }
 
 /** Extra fields for a single `createTask` call. */
@@ -464,7 +565,8 @@ export interface RawApiResponse<T = unknown> {
   errorCode?: string | null;
   errorDescription?: string | null;
   taskId?: number | string;
-  status?: TaskStatus;
+  /** `processing` / `ready` on getTaskResult, or `success` on a report. */
+  status?: TaskStatus | "success";
   solution?: T;
   balance?: number;
 }
