@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
 
-import { GrizzlySmsError } from "./errors.js";
+import { errorFrom } from "./errors.js";
+import { axiosProxy } from "./parse.js";
 
 const DEFAULT_BASE_URL = "https://api.grizzlysms.com";
 const USER_AGENT = "grizzly-sms/2.0.0";
@@ -11,6 +12,11 @@ export interface GrizzlyPartnerOptions {
   key: string;
   baseUrl?: string;
   timeoutMs?: number;
+  /**
+   * HTTP proxy URL. Ignored when `axios` is set.
+   * Example: `http://127.0.0.1:8080`.
+   */
+  proxy?: string;
   axios?: AxiosInstance;
 }
 
@@ -138,7 +144,7 @@ export class GrizzlyPartner {
    */
   constructor(options: GrizzlyPartnerOptions) {
     if (!options.key?.trim()) {
-      throw new GrizzlySmsError("NO_KEY", "Partner key is required");
+      throw errorFrom("NO_KEY", "Partner key is required");
     }
     this.key = options.key.trim();
     this.http =
@@ -146,6 +152,7 @@ export class GrizzlyPartner {
       axios.create({
         baseURL: (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, ""),
         timeout: options.timeoutMs ?? 30_000,
+        proxy: options.proxy ? axiosProxy(options.proxy) : undefined,
         headers: {
           Accept: "application/json",
           "User-Agent": USER_AGENT,
@@ -220,10 +227,7 @@ export class GrizzlyPartner {
    */
   async pushCallRecord(params: PushCallRecordParams): Promise<PartnerStatus> {
     if (!params.text && !params.file) {
-      throw new GrizzlySmsError(
-        "BAD_ACTION",
-        "pushCallRecord requires text or file",
-      );
+      throw errorFrom("BAD_ACTION", "pushCallRecord requires text or file");
     }
     const form = new FormData();
     form.append("action", "PUSH_CALL_RECORD");
@@ -235,7 +239,10 @@ export class GrizzlyPartner {
     if (params.file) {
       form.append("file", params.file, params.filename ?? "record");
     }
-    return this.send(() => this.http.post(PUSH_PATH, form), params);
+    return this.send(
+      () => this.http.post(PUSH_PATH, form, { validateStatus: () => true }),
+      params,
+    );
   }
 
   private postJson(
@@ -246,6 +253,7 @@ export class GrizzlyPartner {
       () =>
         this.http.post(PUSH_PATH, body, {
           headers: { "Content-Type": "application/json" },
+          validateStatus: () => true,
         } satisfies AxiosRequestConfig),
       retry,
     );
@@ -264,13 +272,13 @@ export class GrizzlyPartner {
       try {
         response = await request();
       } catch (error) {
-        throw new GrizzlySmsError(
+        throw errorFrom(
           "NETWORK",
           error instanceof Error ? error.message : "Request failed",
         );
       }
       if (response.status >= 400) {
-        throw new GrizzlySmsError(`HTTP_${response.status}`, response.data);
+        throw errorFrom(`HTTP_${response.status}`, response.data);
       }
       const status = readStatus(response.data);
       if (status.status === "SUCCESS") return status;
@@ -280,13 +288,93 @@ export class GrizzlyPartner {
       }
     }
 
-    throw new GrizzlySmsError(last?.status || "ERROR", last?.error ?? last?.status);
+    throw errorFrom(last?.status || "ERROR", last?.error ?? last?.status);
   }
+}
+
+export type PartnerInboundRequest =
+  | PartnerGetServicesRequest
+  | PartnerGetNumberRequest
+  | PartnerFinishActivationRequest;
+
+/**
+ * Classify a body Grizzly posted to the partner server.
+ *
+ * @example
+ * ```ts
+ * const inbound = parsePartnerRequest(JSON.parse(rawBody));
+ * if (inbound.action === "GET_NUMBER") {
+ *   inbound.service;
+ * }
+ * ```
+ */
+export function parsePartnerRequest(data: unknown): PartnerInboundRequest {
+  if (!data || typeof data !== "object") {
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
+  }
+  const row = data as Record<string, unknown>;
+  const action = row.action;
+  const key = row.key;
+  if (typeof key !== "string" || !key.trim()) {
+    throw errorFrom("NO_KEY", data);
+  }
+  if (action === "GET_SERVICES") {
+    return { action, key };
+  }
+  if (action === "GET_NUMBER") {
+    return {
+      action,
+      key,
+      country: Number(row.country),
+      operator: String(row.operator ?? ""),
+      service: String(row.service ?? ""),
+      sum: Number(row.sum),
+      exceptionPhoneSet: Array.isArray(row.exceptionPhoneSet)
+        ? row.exceptionPhoneSet.map((item) => String(item))
+        : undefined,
+      canGetAnotherSms: row.canGetAnotherSms as boolean | number | string | undefined,
+    };
+  }
+  if (action === "FINISH_ACTIVATION") {
+    const status = Number(row.status);
+    if (status !== 1 && status !== 3 && status !== 4 && status !== 5) {
+      throw errorFrom("BAD_STATUS", data);
+    }
+    return {
+      action,
+      key,
+      activationId: Number(row.activationId),
+      status,
+    };
+  }
+  throw errorFrom("BAD_ACTION", data);
+}
+
+/** Reply to inbound `GET_SERVICES`. */
+export function partnerServicesResponse(
+  countryList: PartnerCountryStock[],
+): PartnerGetServicesResponse {
+  return { status: "SUCCESS", countryList };
+}
+
+/** Reply to inbound `GET_NUMBER`. */
+export function partnerNumberResponse(
+  response: Omit<PartnerGetNumberResponse, "status"> & { status?: PartnerGetNumberResponse["status"] },
+): PartnerGetNumberResponse {
+  return { ...response, status: response.status ?? "SUCCESS" };
+}
+
+/** Reply to inbound `FINISH_ACTIVATION`. */
+export function partnerFinishResponse(
+  error?: string,
+): PartnerFinishActivationResponse {
+  if (error) return { status: "ERROR", error };
+  return { status: "SUCCESS" };
 }
 
 function readStatus(data: unknown): PartnerStatus {
   if (!data || typeof data !== "object" || !("status" in data)) {
-    throw new GrizzlySmsError("UNEXPECTED_RESPONSE", data);
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
   }
   const row = data as { status?: unknown; error?: unknown };
   return {

@@ -94,6 +94,8 @@ class CountryInfo:
     hin: str | None = None
     ara: str | None = None
     fra: str | None = None
+    visible: int | None = None
+    retry: int | None = None
 
 
 @dataclass(frozen=True)
@@ -241,6 +243,106 @@ class PartnerFinishActivationRequest(TypedDict):
 
 class _PartnerFinishStatus(TypedDict):
     status: Literal["SUCCESS", "ERROR"]
+
+
+@dataclass(frozen=True)
+class NumberStock:
+    """One ``getNumbersStatus`` key, for example ``tg_0``."""
+
+    key: str
+    service: str
+    suffix: str
+    count: float
+
+
+class RentAction:
+    """Status values for ``set_rent_status``.
+
+    ``FINISH`` is ``1``. ``CANCEL`` is ``2``.
+
+    Examples:
+        RentAction.FINISH
+    """
+
+    FINISH = 1
+    CANCEL = 2
+
+
+@dataclass(frozen=True)
+class RentPhone:
+    """Number returned by ``get_rent_number`` or ``continue_rent``."""
+
+    id: str
+    number: str
+    end_date: str
+
+
+@dataclass(frozen=True)
+class RentMessage:
+    """One SMS from ``get_rent_status``."""
+
+    phone_from: str | None = None
+    service: str | None = None
+    text: str | None = None
+    date: str | None = None
+
+
+@dataclass(frozen=True)
+class RentStatus:
+    """Messages collected for a rental."""
+
+    quantity: float
+    messages: list[RentMessage]
+
+
+@dataclass(frozen=True)
+class RentHistoryEntry:
+    """One extension from ``get_rent_history``."""
+
+    date: str | None = None
+    price: float | None = None
+    hours: float | None = None
+
+
+@dataclass(frozen=True)
+class RentHistory:
+    """History of a rental."""
+
+    quantity: float
+    entries: list[RentHistoryEntry]
+
+
+@dataclass(frozen=True)
+class RentPrice:
+    """One row from ``get_rent_prices``."""
+
+    country: str
+    service: str
+    cost: float
+    count: float
+    max_hours: float | None = None
+
+
+@dataclass(frozen=True)
+class ActivationWebhook:
+    """Profile webhook body in the sms-activate-compatible shape."""
+
+    activation_id: str
+    service: str | None = None
+    text: str | None = None
+    code: str | None = None
+    country: str | None = None
+    received_at: str | None = None
+
+
+@dataclass(frozen=True)
+class ReceivedMessage:
+    """Code delivered by ``wait_for_message``."""
+
+    code: str
+    source: str
+    text: str | None = None
+    verification_type: int | None = None
 
 
 class PartnerFinishActivationResponse(_PartnerFinishStatus, total=False):
