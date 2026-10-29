@@ -33,6 +33,39 @@ export interface ChangeNowClientOptions {
    * End-user IP address. Sent as the documented `x-forwarded-for` header.
    */
   userIp?: string;
+  /**
+   * Extra attempts after a failed idempotent request. Defaults to 2.
+   * Retries cover network failures, HTTP 408, 429, and 5xx. POST is not retried
+   * unless `retryUnsafe` is set.
+   */
+  retries?: number;
+  /**
+   * Base delay in milliseconds before a retry. Doubles after each attempt.
+   * `Retry-After` overrides it when the response sends one. Defaults to 200.
+   */
+  retryDelayMs?: number;
+  /**
+   * Also retry POST, including create, refund, and continue. Defaults to false.
+   */
+  retryUnsafe?: boolean;
+  /**
+   * HTTP or HTTPS proxy URL, for example `http://user:pass@127.0.0.1:8888`.
+   */
+  proxy?: string;
+  /**
+   * Legacy v1 base URL. Defaults to https://api.changenow.io/v1.
+   */
+  v1BaseURL?: string;
+  /**
+   * Anonymous catalogue and version-3 exchange API.
+   * Defaults to https://vip-api.changenow.io.
+   */
+  publicBaseURL?: string;
+  /**
+   * Extra request headers. The partner API key header is applied after these
+   * and is not replaced by this map.
+   */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -592,4 +625,275 @@ export interface CreatedPrivateTransfer {
   payoutExtraId?: string | null;
   refundAddress?: string | null;
   refundExtraId?: string | null;
+}
+
+/** One row of `GET /v1/assets`. */
+export interface PublicAsset {
+  asset: string;
+  ticker: string;
+  name: string;
+  network: string;
+  kind: "crypto" | "fiat" | string;
+  fixed_rate: boolean;
+  memo: boolean;
+}
+
+/** Detail row of `GET /v1/assets/{asset}`. */
+export interface PublicAssetDetail extends PublicAsset {
+  slug?: string | null;
+  decimals?: number | null;
+  memo_name?: string | null;
+  address_regex?: string | null;
+  memo_regex?: string | null;
+  token_contract?: string | null;
+  warning_send?: string | null;
+  warning_receive?: string | null;
+  explorer_address_url?: string | null;
+  explorer_tx_url?: string | null;
+  price_usd?: number | null;
+}
+
+export interface ListAssetsParams {
+  /** Substring match over id, ticker, slug, name, and network. */
+  q?: string;
+  network?: string;
+  kind?: "crypto" | "fiat" | "all";
+  fixed_rate?: boolean;
+  popular?: boolean;
+  /** Page size 1–500. Refused together with `format: "csv"`. */
+  limit?: number;
+  cursor?: string;
+  format?: "json" | "csv";
+  /** Return the plain-text manual instead of data. */
+  help?: boolean;
+}
+
+export interface AssetListEnvelope {
+  version?: string | null;
+  returned: number;
+  total: number;
+  has_more: boolean;
+  next_cursor: string | null;
+  summary: string;
+  assets: PublicAsset[];
+  ignored?: string[];
+}
+
+export interface PublicEstimateParams {
+  fromCurrency: string;
+  fromNetwork: string;
+  toCurrency: string;
+  toNetwork: string;
+  fromAmount?: number | string;
+  toAmount?: number | string;
+  flow?: ExchangeFlow;
+  type?: ExchangeType;
+  useRateId?: boolean;
+  promoCode?: string;
+  help?: boolean;
+}
+
+export interface PublicQuote {
+  fromCurrency: string;
+  fromNetwork: string;
+  toCurrency: string;
+  toNetwork: string;
+  fromAmount: string | null;
+  toAmount: string | null;
+  rate: string | null;
+  flow: string;
+  type: string;
+  rateId: string | null;
+  validUntil: string | null;
+  minAmount: string | null;
+  maxAmount: string | null;
+  limitsUnit: string;
+  provider: "changenow" | "third-party" | string;
+  highNetworkFee: boolean;
+  speedForecastMinutes: string | null;
+  warning: string | null;
+  quoteId: string | null;
+}
+
+export interface PublicEstimate {
+  quote: PublicQuote;
+  ignored?: string[];
+}
+
+export interface CreatePublicTransactionParams {
+  fromCurrency: string;
+  fromNetwork: string;
+  toCurrency: string;
+  toNetwork: string;
+  address: string;
+  fromAmount?: number | string;
+  toAmount?: number | string;
+  extraId?: string;
+  refundAddress?: string;
+  refundExtraId?: string;
+  contactEmail?: string;
+  flow?: ExchangeFlow;
+  type?: ExchangeType;
+  rateId?: string;
+  promoCode?: string;
+  source?: string;
+  linkId?: string;
+  /** Send `{ help: true }` to fetch the manual. No order is created. */
+  help?: boolean;
+}
+
+export interface PublicTransactionCreated {
+  id: string;
+  provider: string;
+  fromCurrency: string;
+  fromNetwork: string;
+  toCurrency: string;
+  toNetwork: string;
+  fromAmount: string | null;
+  toAmount: string | null;
+  flow: string | null;
+  type: string | null;
+  validUntil?: string | null;
+  payinAddress: string | null;
+  payinExtraId: string | null;
+  payoutAddress: string | null;
+  payoutExtraId: string | null;
+  refundAddress: string | null;
+  refundExtraId: string | null;
+  addressFormatChecked: boolean;
+  addressWarning?: string;
+  ignored?: string[];
+}
+
+export interface PublicTransaction extends PublicTransactionCreated {
+  status?: string | null;
+  fromLegacyTicker?: string | null;
+  toLegacyTicker?: string | null;
+  expectedAmountFrom?: string | null;
+  expectedAmountTo?: string | null;
+  amountFrom?: string | null;
+  amountTo?: string | null;
+  payinHash?: string | null;
+  payoutHash?: string | null;
+  refundHash?: string | null;
+  refundAmount?: string | null;
+  depositReceivedAt?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface GetPublicTransactionParams {
+  subId?: string;
+  help?: boolean;
+}
+
+export interface WaitForExchangeOptions {
+  /** Stop after this many milliseconds. Defaults to 600000 (10 minutes). */
+  timeoutMs?: number;
+  /** Delay between polls. Defaults to 5000. */
+  intervalMs?: number;
+  /** Statuses that end the wait. Defaults to the terminal exchange statuses. */
+  terminalStatuses?: readonly string[];
+  /** Called with each poll, including the final one. */
+  onStatus?: (status: string, snapshot: unknown) => void;
+}
+
+export interface V1Currency {
+  ticker: string;
+  name?: string;
+  image?: string;
+  hasExternalId?: boolean;
+  isFiat?: boolean;
+  featured?: boolean;
+  isStable?: boolean;
+  supportsFixedRate?: boolean;
+  isAnonymous?: boolean;
+  isExtraIdSupported?: boolean;
+}
+
+export interface V1CurrencyInfo extends V1Currency {
+  warnings?: { from?: string; to?: string };
+  wallets?: unknown;
+}
+
+export interface V1CurrenciesParams {
+  active?: boolean;
+  fixedRate?: boolean;
+}
+
+export interface V1Estimate {
+  estimatedAmount: number;
+  transactionSpeedForecast?: string | null;
+  warningMessage?: string | null;
+  networkFee?: number;
+  rateId?: string | null;
+  validUntil?: string | null;
+  depositFee?: number;
+  withdrawalFee?: number;
+}
+
+export interface V1Range {
+  minAmount: number;
+  maxAmount: number | null;
+}
+
+export interface V1CreateTransactionParams {
+  from: string;
+  to: string;
+  address: string;
+  amount: number | string;
+  extraId?: string;
+  refundAddress?: string;
+  refundExtraId?: string;
+  userId?: string | number;
+  payload?: PartnerPayload;
+  contactEmail?: string;
+  rateId?: string;
+  flow?: ExchangeFlow;
+}
+
+export interface V1CreatedTransaction {
+  id: string;
+  payinAddress?: string;
+  payoutAddress?: string;
+  payinExtraId?: string | null;
+  payoutExtraId?: string | null;
+  fromCurrency?: string;
+  toCurrency?: string;
+  amount?: number | string;
+  refundAddress?: string | null;
+  refundExtraId?: string | null;
+}
+
+export interface V1TransactionStatus {
+  status: string;
+  id?: string;
+  payinAddress?: string;
+  payoutAddress?: string;
+  fromCurrency?: string;
+  toCurrency?: string;
+  amountSend?: number | null;
+  amountReceive?: number | null;
+  payinHash?: string | null;
+  payoutHash?: string | null;
+  refundAddress?: string | null;
+  refundExtraId?: string | null;
+  updatedAt?: string;
+}
+
+export interface V1ListTransactionsParams {
+  from?: string;
+  to?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface V1FixedRateAmountParams {
+  amount: number | string;
+  from: string;
+  to: string;
+  useRateId?: boolean;
 }
