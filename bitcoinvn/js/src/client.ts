@@ -1,6 +1,12 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+import axios, { type AxiosInstance, type AxiosProxyConfig, type AxiosRequestConfig } from "axios";
 
-import { BitcoinVnError, errorFromBody, parseRetryAfter } from "./errors.js";
+import {
+  BitcoinVnError,
+  BitcoinVnTimeoutError,
+  BitcoinVnTransportError,
+  errorFromBody,
+  headerNumber,
+} from "./errors.js";
 import type {
   AddressValidation,
   BalanceHistoryParams,
@@ -13,18 +19,50 @@ import type {
   HealthStatus,
   Info,
   LedgerItem,
+  ListAllLedgerParams,
+  ListAllOrdersParams,
   ListOrdersParams,
   Order,
+  OrderSettleData,
+  OrderStatus,
   Pair,
   Quote,
+  RateLimit,
   SettleDataCorrection,
   SubmitDepositParams,
+  SwapOptions,
   Ticker,
   Vault,
+  WaitForOrderParams,
 } from "./types.js";
+import { readWebhook, verifyWebhookSignature, type WebhookRead } from "./webhook.js";
 
 const DEFAULT_BASE_URL = "https://bitcoinvn.io";
 const USER_AGENT = "bitcoinvn/0.1.0";
+
+/** Orders returned by one `GET /api/orders` page. */
+export const ORDERS_PAGE_SIZE = 10;
+
+/** Ledger rows returned by one `GET /api/balances/history` page. */
+export const LEDGER_PAGE_SIZE = 25;
+
+/** Statuses that stop `waitForOrder` when the caller does not pass `statuses`. */
+export const DEFAULT_WAIT_STATUSES: readonly OrderStatus[] = [
+  "completed",
+  "canceled",
+  "settle_data_error",
+];
+
+/** Documented order states. */
+export const ORDER_STATUSES: readonly OrderStatus[] = [
+  "new",
+  "pending",
+  "settle_data_error",
+  "on_hold",
+  "processing",
+  "completed",
+  "canceled",
+];
 
 /** @internal */
 export const REFERRER = "35b2eec68a1741ac";
@@ -36,6 +74,9 @@ export const REFERRER = "35b2eec68a1741ac";
  * by passing `apiKey` when you call an account endpoint. The key is created on
  * the API keys page at bitcoinvn.io. This client does not manage keys.
  *
+ * `createOrder`, `fixedSwap`, and `variableSwap` always send `referrer` in the
+ * JSON body and ignore any other value.
+ *
  * @example
  * ```ts
  * const client = new BitcoinVn();
@@ -43,8 +84,19 @@ export const REFERRER = "35b2eec68a1741ac";
  * ```
  */
 export class BitcoinVn {
+  /** Rate-limit headers from the most recent response, when the API sent any. */
+  lastRateLimit?: RateLimit;
+
   private readonly apiKey?: string;
   private readonly http: AxiosInstance;
+  private readonly baseUrl: string;
+  private readonly retries: number;
+  private readonly retryDelayMs: number;
+  private readonly maxRetryDelayMs: number;
+  private readonly retryMutations: boolean;
+  private readonly extraHeaders: Record<string, string>;
+  private readonly nowFn: () => number;
+  private readonly sleepFn?: (ms: number) => Promise<void>;
 
   /**
    * @param options API key string, or settings. A blank key is treated as no key.
@@ -58,11 +110,20 @@ export class BitcoinVn {
     const config: BitcoinVnOptions = typeof options === "string" ? { apiKey: options } : options;
     const key = config.apiKey?.trim();
     this.apiKey = key ? key : undefined;
+    this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
+    this.retries = Math.max(0, config.retries ?? 0);
+    this.retryDelayMs = Math.max(0, config.retryDelayMs ?? 200);
+    this.maxRetryDelayMs = Math.max(0, config.maxRetryDelayMs ?? 5_000);
+    this.retryMutations = config.retryMutations ?? false;
+    this.extraHeaders = config.headers ?? {};
+    this.nowFn = config.now ?? (() => Date.now());
+    this.sleepFn = config.sleep;
     this.http =
       config.axios ??
       axios.create({
-        baseURL: (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, ""),
+        baseURL: this.baseUrl,
         timeout: config.timeoutMs ?? 30_000,
+        proxy: config.proxy === undefined ? undefined : normalizeProxy(config.proxy),
       });
   }
 
@@ -92,6 +153,11 @@ export class BitcoinVn {
     return this.request("GET", "/api/info");
   }
 
+  /** Alias of `getInfo`. */
+  info(): Promise<Info> {
+    return this.getInfo();
+  }
+
   /**
    * `GET /api/pairs/{depositMethodId}/{settleMethodId}`.
    * A 200 response does not reserve liquidity. If `max` is less than `min`, the pair
@@ -107,6 +173,11 @@ export class BitcoinVn {
       "GET",
       `/api/pairs/${segment(depositMethodId)}/${segment(settleMethodId)}`,
     );
+  }
+
+  /** Alias of `getPair`. */
+  pair(depositMethodId: string, settleMethodId: string): Promise<Pair> {
+    return this.getPair(depositMethodId, settleMethodId);
   }
 
   /**
@@ -169,6 +240,11 @@ export class BitcoinVn {
     return this.request("POST", "/api/quotes", { body: definedRecord(params) });
   }
 
+  /** Alias of `createQuote`. */
+  quote(params: CreateQuoteParams): Promise<Quote> {
+    return this.createQuote(params);
+  }
+
   /**
    * `GET /api/orders`. Requires `X-API-KEY`. Pages contain 10 orders.
    *
@@ -181,6 +257,31 @@ export class BitcoinVn {
     return this.request("GET", "/api/orders", {
       query: { page: params.page, customOrderId: params.customOrderId },
     });
+  }
+
+  /** Alias of `listOrders`. */
+  orders(params: ListOrdersParams = {}): Promise<Order[]> {
+    return this.listOrders(params);
+  }
+
+  /**
+   * Yield every order, following `page` until a short page or `maxPages`.
+   * Requires `X-API-KEY`.
+   */
+  async *iterateOrders(params: ListAllOrdersParams = {}): AsyncGenerator<Order> {
+    const maxPages = params.maxPages ?? 100;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const batch = await this.listOrders({ page, customOrderId: params.customOrderId });
+      for (const order of batch) yield order;
+      if (batch.length < ORDERS_PAGE_SIZE) return;
+    }
+  }
+
+  /** Collect `iterateOrders` into an array. */
+  async listAllOrders(params: ListAllOrdersParams = {}): Promise<Order[]> {
+    const orders: Order[] = [];
+    for await (const order of this.iterateOrders(params)) orders.push(order);
+    return orders;
   }
 
   /**
@@ -208,6 +309,43 @@ export class BitcoinVn {
   }
 
   /**
+   * Create an order from a quote id.
+   * A string `destination` is sent as `{ address }`. Omit it for an internal-balance credit.
+   * The JSON body always includes `referrer`.
+   */
+  fixedSwap(
+    quoteId: string,
+    destination?: string | OrderSettleData | null,
+    options: SwapOptions = {},
+  ): Promise<Order> {
+    return this.createOrder({
+      quote: quoteId,
+      settleData: normalizeDestination(destination),
+      webhookUrl: options.webhookUrl,
+      customOrderId: options.customOrderId,
+    });
+  }
+
+  /**
+   * Create a variable-amount order from method ids, without a quote.
+   * A string `destination` is sent as `{ address }`. The JSON body always includes `referrer`.
+   */
+  variableSwap(
+    depositMethod: string,
+    settleMethod: string,
+    destination?: string | OrderSettleData | null,
+    options: SwapOptions = {},
+  ): Promise<Order> {
+    return this.createOrder({
+      depositMethod,
+      settleMethod,
+      settleData: normalizeDestination(destination),
+      webhookUrl: options.webhookUrl,
+      customOrderId: options.customOrderId,
+    });
+  }
+
+  /**
    * `GET /api/orders/{id}`. `id` is the 8-character `shortId`.
    * A key is optional. An account order returns 403 when another account's key is sent.
    *
@@ -218,6 +356,39 @@ export class BitcoinVn {
    */
   getOrder(id: string): Promise<Order> {
     return this.request("GET", `/api/orders/${segment(id)}`);
+  }
+
+  /** Alias of `getOrder`. */
+  order(id: string): Promise<Order> {
+    return this.getOrder(id);
+  }
+
+  /**
+   * Poll `getOrder` until `status` is one of `statuses`, or the timeout elapses.
+   * The default stop statuses are `completed`, `canceled`, and `settle_data_error`.
+   * A timeout throws `BitcoinVnTimeoutError` and includes the last order.
+   */
+  async waitForOrder(id: string, params: WaitForOrderParams = {}): Promise<Order> {
+    const timeoutMs = params.timeoutMs ?? 120_000;
+    const intervalMs = Math.max(0, params.intervalMs ?? 3_000);
+    const wanted = new Set<OrderStatus>(params.statuses ?? DEFAULT_WAIT_STATUSES);
+    const deadline = this.nowFn() + timeoutMs;
+    for (;;) {
+      if (params.signal?.aborted) {
+        throw new BitcoinVnError("The wait was aborted", { status: 0, code: 0 });
+      }
+      const order = await this.getOrder(id);
+      if (wanted.has(order.status)) return order;
+      const current = this.nowFn();
+      if (current >= deadline) {
+        throw new BitcoinVnTimeoutError(
+          `Order ${id} was still ${order.status} after ${timeoutMs} ms`,
+          order,
+        );
+      }
+      const delay = Math.min(intervalMs, Math.max(deadline - current, 0));
+      await this.pause(delay, params.signal);
+    }
   }
 
   /**
@@ -269,6 +440,11 @@ export class BitcoinVn {
     return this.request("GET", "/api/balances");
   }
 
+  /** Alias of `getBalances`. */
+  balances(): Promise<Balances> {
+    return this.getBalances();
+  }
+
   /**
    * `GET /api/balances/history`. Requires `X-API-KEY`. Pages contain 25 rows.
    *
@@ -281,6 +457,23 @@ export class BitcoinVn {
     return this.request("GET", "/api/balances/history", {
       query: { assetId: params.assetId, page: params.page },
     });
+  }
+
+  /** Yield every ledger page until a short page or `maxPages`. Requires `X-API-KEY`. */
+  async *iterateBalanceHistory(params: ListAllLedgerParams = {}): AsyncGenerator<LedgerItem> {
+    const maxPages = params.maxPages ?? 100;
+    for (let page = 1; page <= maxPages; page += 1) {
+      const batch = await this.listBalanceHistory({ assetId: params.assetId, page });
+      for (const row of batch) yield row;
+      if (batch.length < LEDGER_PAGE_SIZE) return;
+    }
+  }
+
+  /** Collect `iterateBalanceHistory` into an array. */
+  async listAllBalanceHistory(params: ListAllLedgerParams = {}): Promise<LedgerItem[]> {
+    const rows: LedgerItem[] = [];
+    for await (const row of this.iterateBalanceHistory(params)) rows.push(row);
+    return rows;
   }
 
   /**
@@ -373,11 +566,54 @@ export class BitcoinVn {
     return this.request("GET", `/api/orders/${segment(id)}/guarantee`, { text: true });
   }
 
+  /**
+   * HTML swap form with methods preselected.
+   * Uses the origin of `baseUrl`. A link does not reserve a quote.
+   *
+   * @example
+   * ```ts
+   * client.swapUrl("btc", "xmr");
+   * // https://bitcoinvn.io/?deposit=btc&settle=xmr
+   * ```
+   */
+  swapUrl(deposit?: string, settle?: string): string {
+    const origin = new URL(this.baseUrl).origin;
+    const params = new URLSearchParams();
+    if (deposit) params.set("deposit", deposit);
+    if (settle) params.set("settle", settle);
+    const query = params.toString();
+    return query ? `${origin}/?${query}` : `${origin}/`;
+  }
+
+  /**
+   * Verify `X-Signature` with this client's API key.
+   * Returns false when no key was configured.
+   */
+  verifyWebhook(rawBody: string | Buffer, signature?: string | null): boolean {
+    if (!this.apiKey) return false;
+    return verifyWebhookSignature(rawBody, signature, this.apiKey);
+  }
+
+  /**
+   * Parse an order webhook. With `requireSignature`, a mismatch throws.
+   * The key is this client's API key.
+   */
+  readWebhook(
+    rawBody: string | Buffer,
+    signature?: string | null,
+    options?: { requireSignature?: boolean },
+  ): WebhookRead {
+    return readWebhook(rawBody, signature, this.apiKey, options);
+  }
+
   private headers(): Record<string, string> {
-    const headers: Record<string, string> = {
-      Accept: "application/json, text/plain",
-      "User-Agent": USER_AGENT,
-    };
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(this.extraHeaders)) {
+      if (key.toLowerCase() === "x-api-key" || key.toLowerCase() === "user-agent") continue;
+      headers[key] = value;
+    }
+    headers.Accept = headers.Accept ?? "application/json, text/plain";
+    headers["User-Agent"] = USER_AGENT;
     if (this.apiKey) headers["X-API-KEY"] = this.apiKey;
     return headers;
   }
@@ -391,41 +627,116 @@ export class BitcoinVn {
       text?: boolean;
     } = {},
   ): Promise<T> {
-    const config: AxiosRequestConfig = {
-      method,
-      url,
-      headers: this.headers(),
-      validateStatus: () => true,
-      responseType: options.text ? "text" : "json",
-    };
-    const params = compactQuery(options.query);
-    if (params) config.params = params;
-    if (options.body) config.data = options.body;
+    const idempotent = method === "GET";
+    const extra = idempotent || this.retryMutations ? this.retries : 0;
+    const attempts = 1 + extra;
+    let lastError: BitcoinVnError | undefined;
 
-    let response;
-    try {
-      response = await this.http.request<T>(config);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        throw errorFromBody(
-          error.response.status,
-          error.response.data,
-          parseRetryAfter(error.response.headers),
-        );
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const config: AxiosRequestConfig = {
+        method,
+        url,
+        headers: this.headers(),
+        validateStatus: () => true,
+        responseType: options.text ? "text" : "json",
+      };
+      const params = compactQuery(options.query);
+      if (params) config.params = params;
+      if (options.body) config.data = options.body;
+
+      let response;
+      try {
+        response = await this.http.request<T>(config);
+      } catch (error) {
+        const transport = toTransportError(error);
+        lastError = transport;
+        if (this.canRetry(transport, attempt, attempts)) {
+          await this.pause(this.retryDelay(transport, attempt));
+          continue;
+        }
+        throw transport;
       }
-      throw new BitcoinVnError(error instanceof Error ? error.message : "Request failed", {
-        status: 0,
-        code: 0,
-        raw: error,
-      });
+
+      this.captureRateLimit(response.headers);
+      if (response.status >= 400) {
+        const apiError = errorFromBody(response.status, response.data, response.headers);
+        lastError = apiError;
+        if (this.canRetry(apiError, attempt, attempts)) {
+          await this.pause(this.retryDelay(apiError, attempt));
+          continue;
+        }
+        throw apiError;
+      }
+      return response.data;
     }
 
-    const retryAfter = parseRetryAfter(response.headers);
-    if (response.status >= 400) {
-      throw errorFromBody(response.status, response.data, retryAfter);
-    }
-    return response.data;
+    // `attempts` is at least 1, so the loop returns or throws before here.
+    /* istanbul ignore next */
+    throw lastError ?? new BitcoinVnTransportError("Request failed", { status: 0, code: 0 });
   }
+
+  private captureRateLimit(headers: unknown): void {
+    const snapshot = readRateLimit(headers);
+    if (snapshot) this.lastRateLimit = snapshot;
+  }
+
+  private canRetry(error: BitcoinVnError, attempt: number, attempts: number): boolean {
+    if (attempt >= attempts - 1) return false;
+    return error.status === 0 || error.status === 429 || error.status >= 500;
+  }
+
+  private retryDelay(error: BitcoinVnError, attempt: number): number {
+    let delay = this.retryDelayMs * 2 ** attempt;
+    if (error.retryAfter !== undefined) delay = Math.max(delay, error.retryAfter * 1000);
+    if (!Number.isFinite(delay) || delay < 0) delay = 0;
+    return Math.min(delay, this.maxRetryDelayMs);
+  }
+
+  private async pause(ms: number, signal?: AbortSignal): Promise<void> {
+    if (ms <= 0) return;
+    if (this.sleepFn) {
+      await this.sleepFn(ms);
+      if (signal?.aborted) {
+        throw new BitcoinVnError("The wait was aborted", { status: 0, code: 0 });
+      }
+      return;
+    }
+    await new Promise<void>((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(new BitcoinVnError("The wait was aborted", { status: 0, code: 0 }));
+        return;
+      }
+      const timer = setTimeout(() => {
+        signal?.removeEventListener("abort", onAbort);
+        resolve();
+      }, ms);
+      const onAbort = () => {
+        clearTimeout(timer);
+        reject(new BitcoinVnError("The wait was aborted", { status: 0, code: 0 }));
+      };
+      signal?.addEventListener("abort", onAbort, { once: true });
+    });
+  }
+}
+
+function toTransportError(error: unknown): BitcoinVnError {
+  if (axios.isAxiosError(error) && error.response) {
+    return errorFromBody(error.response.status, error.response.data, error.response.headers);
+  }
+  const message = error instanceof Error ? error.message : "Request failed";
+  return new BitcoinVnTransportError(message, { status: 0, code: 0, raw: error });
+}
+
+export function readRateLimit(headers: unknown): RateLimit | undefined {
+  const limit = headerNumber(headers, "x-ratelimit-limit");
+  const remaining = headerNumber(headers, "x-ratelimit-remaining");
+  const retryAfter = headerNumber(headers, "x-ratelimit-retry-after");
+  if (limit === undefined && remaining === undefined && retryAfter === undefined) return undefined;
+  const snapshot: RateLimit = {};
+  if (limit !== undefined) snapshot.limit = limit;
+  if (remaining !== undefined) snapshot.remaining = remaining;
+  if (retryAfter !== undefined) snapshot.retryAfter = retryAfter;
+  return snapshot;
 }
 
 function segment(value: string): string {
@@ -450,4 +761,43 @@ function definedRecord(value: object): Record<string, unknown> {
     if (item !== undefined) record[key] = item;
   }
   return record;
+}
+
+function normalizeDestination(
+  destination: string | OrderSettleData | null | undefined,
+): OrderSettleData | undefined {
+  if (destination == null || destination === "") return undefined;
+  if (typeof destination === "string") return { address: destination };
+  return destination;
+}
+
+export function normalizeProxy(proxy: string | AxiosProxyConfig): AxiosProxyConfig {
+  if (typeof proxy !== "string") return proxy;
+  let url: URL;
+  try {
+    url = new URL(proxy);
+  } catch (error) {
+    throw new BitcoinVnError("Proxy must be an http or https URL", {
+      status: 0,
+      code: 0,
+      raw: error,
+    });
+  }
+  const protocol = url.protocol.replace(":", "");
+  if (protocol !== "http" && protocol !== "https") {
+    throw new BitcoinVnError(`Unsupported proxy protocol: ${protocol}`, { status: 0, code: 0 });
+  }
+  const fallbackPort = protocol === "https" ? 443 : 80;
+  const config: AxiosProxyConfig = {
+    protocol,
+    host: url.hostname,
+    port: url.port ? Number(url.port) : fallbackPort,
+  };
+  if (url.username) {
+    config.auth = {
+      username: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+    };
+  }
+  return config;
 }

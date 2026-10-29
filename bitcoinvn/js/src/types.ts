@@ -456,6 +456,55 @@ export interface EnsResolution {
   ensResolutionToken: string;
 }
 
+/** Values read from `X-RateLimit-*` response headers. */
+export interface RateLimit {
+  /** `X-RateLimit-Limit`. Maximum requests in the current window. */
+  limit?: number;
+  /** `X-RateLimit-Remaining`. Requests left in the current window. */
+  remaining?: number;
+  /** `X-RateLimit-Retry-After`. Seconds until the window resets. */
+  retryAfter?: number;
+}
+
+/** Options for `waitForOrder`. */
+export interface WaitForOrderParams {
+  /** Milliseconds to wait. Defaults to 120000. */
+  timeoutMs?: number;
+  /** Milliseconds between polls. Defaults to 3000. */
+  intervalMs?: number;
+  /**
+   * Statuses that end the wait. Defaults to `completed`, `canceled`, and
+   * `settle_data_error`. `on_hold` keeps polling unless you include it.
+   */
+  statuses?: readonly OrderStatus[];
+  /** Abort the wait. An abort throws `BitcoinVnError` with status 0. */
+  signal?: AbortSignal;
+}
+
+/** Options for walking every order page. */
+export interface ListAllOrdersParams {
+  /** Exact case-sensitive client id filter. */
+  customOrderId?: string;
+  /** Maximum pages to request. Defaults to 100. Pages contain 10 orders. */
+  maxPages?: number;
+}
+
+/** Options for walking every ledger page. */
+export interface ListAllLedgerParams {
+  /** Asset ticker filter. Omit for every asset. */
+  assetId?: string;
+  /** Maximum pages to request. Defaults to 100. Pages contain 25 rows. */
+  maxPages?: number;
+}
+
+/** Optional fields for `fixedSwap` and `variableSwap`. */
+export interface SwapOptions {
+  /** HTTPS webhook URL. */
+  webhookUrl?: string;
+  /** Client id, at most 64 characters, unique per authenticated user. */
+  customOrderId?: string;
+}
+
 /** Client settings. A missing or blank key sends no `X-API-KEY` header. */
 export interface BitcoinVnOptions {
   /**
@@ -463,10 +512,42 @@ export interface BitcoinVnOptions {
    * without it. Account reads and account writes require it.
    */
   apiKey?: string;
-  /** Defaults to `https://bitcoinvn.io`. */
+  /** Defaults to `https://bitcoinvn.io`. A trailing slash is removed. */
   baseUrl?: string;
   /** Request timeout in milliseconds. Defaults to 30000. */
   timeoutMs?: number;
-  /** Axios instance used instead of the built-in client. */
+  /**
+   * Axios instance used instead of the built-in client.
+   * `baseUrl`, `timeoutMs`, and `proxy` are ignored when this is set.
+   */
   axios?: import("axios").AxiosInstance;
+  /**
+   * HTTP or HTTPS proxy used by the built-in Axios client.
+   * A string is an absolute URL such as `http://user:pass@127.0.0.1:8080`.
+   */
+  proxy?: string | import("axios").AxiosProxyConfig;
+  /**
+   * Extra attempts for idempotent GET requests after a transport failure,
+   * HTTP 429, or HTTP 5xx. Defaults to 0. POST and PUT are not retried unless
+   * `retryMutations` is true.
+   */
+  retries?: number;
+  /** Base delay in milliseconds before a retry. Doubles on each attempt. Defaults to 200. */
+  retryDelayMs?: number;
+  /**
+   * Upper bound in milliseconds for a retry delay, including `Retry-After`.
+   * Defaults to 5000.
+   */
+  maxRetryDelayMs?: number;
+  /** When true, POST and PUT use `retries` as well. Defaults to false. */
+  retryMutations?: boolean;
+  /**
+   * Extra request headers. `X-API-KEY` and `User-Agent` are always set by the client
+   * and cannot be replaced here.
+   */
+  headers?: Record<string, string>;
+  /** Clock used by `waitForOrder`. Defaults to `Date.now`. */
+  now?: () => number;
+  /** Sleep used by retries and `waitForOrder`. Defaults to `setTimeout`. */
+  sleep?: (ms: number) => Promise<void>;
 }

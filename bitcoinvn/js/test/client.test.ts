@@ -87,7 +87,7 @@ describe("BitcoinVn", () => {
       () => [429, { error: { message: "Too many requests.", code: 429 } }, { "X-RateLimit-Retry-After": "12" }],
     );
     await expect(failing.getHealth()).rejects.toMatchObject({
-      name: "BitcoinVnError",
+      name: "BitcoinVnRateLimitError",
       message: "Too many requests.",
       status: 429,
       code: 429,
