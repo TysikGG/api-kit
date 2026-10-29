@@ -1,10 +1,73 @@
 export { Chaojiying, SOFT_ID, SOFT_KEY } from "./client.js";
-export { ChaojiyingError } from "./errors.js";
-
+export type { ImageInput } from "./client.js";
+export {
+  CODE_TYPES,
+  CodeType,
+  FreeModel,
+  describeCodeType,
+  resolveFreeModel,
+  resultShape,
+} from "./codes.js";
+export type { CodeTypeInfo, CodeTypeName, FreeModelId, ResultShape } from "./codes.js";
+export {
+  ERROR_CODES,
+  AccessTokenError,
+  BadClickInstructionError,
+  Base64ParseError,
+  ChaojiyingAPIError,
+  ChaojiyingError,
+  CodeTypeError,
+  ErrorRateTooHighError,
+  ImageTooLargeError,
+  InsufficientPointsError,
+  InvalidImageError,
+  InvalidPictureIdError,
+  IpBlacklistError,
+  IpWhitelistError,
+  MalformedBase64Error,
+  MissingClickInstructionError,
+  MissingCredentialsError,
+  NetworkError,
+  NoResourcePackError,
+  PasswordError,
+  PictureAlreadyReportedError,
+  RateLimitError,
+  ReportNotSupportedError,
+  ResponseIntegrityError,
+  TimeoutError,
+  UnknownUserError,
+  UnrecognizableImageError,
+  UploadError,
+  UserParameterError,
+  createApiError,
+  describeErrorCode,
+} from "./errors.js";
+export type { ChaojiyingErrorOptions, ErrorCodeInfo } from "./errors.js";
+export {
+  ColorChannel,
+  MAX_FREE_IMAGE_BYTES,
+  MAX_PAID_IMAGE_BYTES,
+  clickInstruction,
+  colorInstruction,
+  computeResponseMd5,
+  horizontalDistance,
+  parsePlates,
+  parsePoints,
+  parseRectangles,
+  parseTextLocations,
+  verifyResponseMd5,
+} from "./parse.js";
+export type { ColorInput } from "./parse.js";
 export type {
   ChaojiyingOptions,
+  FreeRecognizeOptions,
+  Plate,
+  Point,
+  ProxyOptions,
   RecognizeOptions,
   RecognizeResult,
+  Rect,
   ReportErrorResult,
   ScoreResult,
+  TextLocation,
 } from "./types.js";
