@@ -1,7 +1,7 @@
 {
   "name": "changenow-client",
   "version": "0.1.0",
-  "description": "TypeScript client for the ChangeNOW cryptocurrency exchange API (v2)",
+  "description": "TypeScript client for ChangeNOW: partner API v2, legacy v1, anonymous catalogue and v3 quotes, polling, and retries",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -11,11 +11,13 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "examples"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
+    "test": "jest --coverage",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
   },
   "repository": {

@@ -22,4 +22,13 @@ module.exports = {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
+  collectCoverage: true,
+  collectCoverageFrom: ["src/**/*.ts"],
+  coverageDirectory: "coverage",
+  coverageThreshold: {
+    global: {
+      lines: 95,
+      statements: 95,
+    },
+  },
 };

@@ -1,7 +1,32 @@
-"""ChangeNOW cryptocurrency exchange API (v2) client."""
+"""ChangeNOW cryptocurrency exchange API client (partner v2, legacy v1, anonymous v3)."""
 
+from .async_client import AsyncChangeNow
 from .client import CHANGENOW_API_KEY_HEADER, ChangeNow
-from .errors import ChangeNowError
+from .errors import (
+    CHANGENOW_ERROR_CODES,
+    ChangeNowAddressError,
+    ChangeNowAmountError,
+    ChangeNowAssetError,
+    ChangeNowAuthError,
+    ChangeNowError,
+    ChangeNowForbiddenError,
+    ChangeNowNetworkError,
+    ChangeNowNotFoundError,
+    ChangeNowPairError,
+    ChangeNowRateError,
+    ChangeNowRateLimitError,
+    ChangeNowServerError,
+    ChangeNowTimeoutError,
+    ChangeNowValidationError,
+)
+from .link import (
+    EXCHANGE_STATUSES,
+    TERMINAL_EXCHANGE_STATUSES,
+    build_exchange_link,
+    is_terminal_exchange_status,
+    parse_exchange_webhook,
+    split_asset_id,
+)
 from .types import (
     AddressValidation,
     AvailablePair,
@@ -17,11 +42,28 @@ from .types import (
 
 __all__ = [
     "CHANGENOW_API_KEY_HEADER",
+    "CHANGENOW_ERROR_CODES",
+    "EXCHANGE_STATUSES",
+    "TERMINAL_EXCHANGE_STATUSES",
     "AddressValidation",
+    "AsyncChangeNow",
     "AvailablePair",
     "ChangeNow",
+    "ChangeNowAddressError",
+    "ChangeNowAmountError",
+    "ChangeNowAssetError",
+    "ChangeNowAuthError",
     "ChangeNowCurrency",
     "ChangeNowError",
+    "ChangeNowForbiddenError",
+    "ChangeNowNetworkError",
+    "ChangeNowNotFoundError",
+    "ChangeNowPairError",
+    "ChangeNowRateError",
+    "ChangeNowRateLimitError",
+    "ChangeNowServerError",
+    "ChangeNowTimeoutError",
+    "ChangeNowValidationError",
     "CreatedExchange",
     "EstimatedAmount",
     "ExchangeStatus",
@@ -29,4 +71,8 @@ __all__ = [
     "MarketEstimate",
     "MinAmountResult",
     "RangeResult",
+    "build_exchange_link",
+    "is_terminal_exchange_status",
+    "parse_exchange_webhook",
+    "split_asset_id",
 ]

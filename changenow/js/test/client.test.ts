@@ -363,7 +363,7 @@ describe("ChangeNOW client", () => {
     await expect(
       client.getMinAmount({ fromCurrency: "btcc", toCurrency: "eth" })
     ).rejects.toMatchObject({
-      name: "ChangeNowError",
+      name: "ChangeNowValidationError",
       message: "Currency btcc is not supported",
       statusCode: 400,
       code: "not_valid_params",
