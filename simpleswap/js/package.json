@@ -1,7 +1,7 @@
 {
   "name": "simpleswap-client",
   "version": "0.1.1",
-  "description": "TypeScript client for the SimpleSwap cryptocurrency exchange API (v3)",
+  "description": "Typed client for the SimpleSwap cryptocurrency exchange API (v3): pairs, estimates, swaps, market rates, and deposit confirmation",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest --coverage",
     "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
   },
   "repository": {

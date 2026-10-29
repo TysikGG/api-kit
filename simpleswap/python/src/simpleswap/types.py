@@ -18,7 +18,7 @@ class SimpleSwapCurrency(TypedDict, total=False):
     validationExtra: str | None
     addressExplorer: str
     txExplorer: str
-    confirmationsFrom: str
+    confirmationsFrom: str | int
     legacySymbol: str
     warningsFrom: list[str]
     warningsTo: list[str]
@@ -41,6 +41,8 @@ class CheckExchangeResult(TypedDict, total=False):
 
 class ExchangeOrder(TypedDict, total=False):
     id: str
+    publicId: str
+    type: str
     status: str
     tickerFrom: str
     tickerTo: str
@@ -58,3 +60,42 @@ class ExchangeOrder(TypedDict, total=False):
     txTo: str | None
     createdAt: str
     updatedAt: str
+    validUntil: str | None
+
+
+class MarketRate(TypedDict, total=False):
+    tickerFrom: str
+    networkFrom: str
+    tickerTo: str
+    networkTo: str
+    min: str | None
+    max: str | None
+    rate: str
+    minerFee: str
+    reserve: str
+    untilTime: str
+    rateId: str
+
+
+class ExchangeStatus:
+    """Known exchange status strings. The API may return additional values."""
+
+    WAITING = "waiting"
+    CONFIRMING = "confirming"
+    EXCHANGING = "exchanging"
+    SENDING = "sending"
+    FINISHED = "finished"
+    FAILED = "failed"
+    REFUNDED = "refunded"
+    EXPIRED = "expired"
+    VERIFYING = "verifying"
+
+
+TERMINAL_EXCHANGE_STATUSES: frozenset[str] = frozenset(
+    {
+        ExchangeStatus.FINISHED,
+        ExchangeStatus.FAILED,
+        ExchangeStatus.REFUNDED,
+        ExchangeStatus.EXPIRED,
+    }
+)

@@ -23,3 +23,12 @@ def test_live_currencies_and_estimate():
         amount="0.1",
     )
     assert "estimatedAmount" in est
+
+    btc = client.get_currency("btc", "btc")
+    assert btc.get("ticker")
+
+    pairs = client.get_pairs("btc", "btc", fixed=False)
+    assert isinstance(pairs, dict)
+
+    ranges = client.get_ranges("btc", "eth", network_from="btc", network_to="eth")
+    assert "min" in ranges
