@@ -1,16 +1,25 @@
 import axios, { type AxiosInstance } from "axios";
 
-import { CapMonsterError, describeCapMonsterError } from "./errors.js";
+import {
+  CapMonsterError,
+  createCapMonsterError,
+  describeCapMonsterError,
+  isRetryableCapMonsterError,
+} from "./errors.js";
 import type {
   CapMonsterBalance,
   CapMonsterOptions,
   CreateTaskOptions,
+  PollUpdate,
   RawApiResponse,
+  ReportResult,
+  SolveResult,
   TaskResult,
   WaitForOptions,
 } from "./types.js";
 
 const DEFAULT_BASE_URL = "https://api.capmonster.cloud";
+const DEFAULT_USER_AGENT_URL = "https://capmonster.cloud/api/useragent/actual";
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 /**
@@ -38,6 +47,9 @@ export const DEFAULT_SOFT_ID = "";
 export class CapMonster {
   private readonly clientKey: string;
   private readonly softId: number | string;
+  private readonly retries: number;
+  private readonly retryDelayMs: number;
+  private readonly userAgentUrl: string;
   private readonly http: AxiosInstance;
 
   /**
@@ -48,11 +60,14 @@ export class CapMonster {
       typeof options === "string" ? { clientKey: options } : options;
 
     if (!config.clientKey?.trim()) {
-      throw new CapMonsterError("Client key is required", 1, "MISSING_CLIENT_KEY");
+      throw createCapMonsterError("Client key is required", 1, "MISSING_CLIENT_KEY");
     }
 
-    this.clientKey = config.clientKey.trim();
+    this.clientKey = effectiveClientKey(config.clientKey.trim(), config);
     this.softId = config.softId ?? DEFAULT_SOFT_ID;
+    this.retries = config.retries ?? 0;
+    this.retryDelayMs = config.retryDelayMs ?? 1_000;
+    this.userAgentUrl = config.userAgentUrl ?? DEFAULT_USER_AGENT_URL;
     const baseURL = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
 
     this.http =
@@ -68,7 +83,7 @@ export class CapMonster {
   }
 
   /**
-   * Check account balance.
+   * Check account balance. This call does not spend credit.
    *
    * @example
    * ```ts
@@ -82,6 +97,35 @@ export class CapMonster {
     });
 
     return { balance: response.balance ?? 0 };
+  }
+
+  /**
+   * Current Windows User-Agent supported by CapMonster Cloud.
+   * Send the same value on the task and on the target site.
+   *
+   * @see https://docs.capmonster.cloud/docs/api/methods/get-user-agent/
+   */
+  async getUserAgent(): Promise<string> {
+    try {
+      const res = await this.http.get<string>(this.userAgentUrl, {
+        responseType: "text",
+        transformResponse: [(data: unknown) => data],
+      });
+      const text = String(res.data ?? "").trim();
+      if (!text) {
+        throw createCapMonsterError(
+          "Empty user agent response",
+          0,
+          "EMPTY_USER_AGENT",
+          res.status,
+          res.data,
+        );
+      }
+      return text;
+    } catch (err: unknown) {
+      if (err instanceof CapMonsterError) throw err;
+      throw this.wrapTransportError(err);
+    }
   }
 
   /**
@@ -106,23 +150,13 @@ export class CapMonster {
     task: T,
     options: CreateTaskOptions = {},
   ): Promise<number> {
-    const payload: Record<string, unknown> = {
-      clientKey: this.clientKey,
-      task,
-    };
-
-    const softId = options.softId ?? this.softId;
-    if (hasSoftId(softId)) {
-      payload.softId = formatSoftId(softId);
-    }
-    if (options.callbackUrl) {
-      payload.callbackUrl = options.callbackUrl;
-    }
-
-    const response = await this.post<RawApiResponse>("/createTask", payload);
+    const response = await this.post<RawApiResponse>(
+      "/createTask",
+      this.createTaskBody(task, options),
+    );
     const taskId = normalizeTaskId(response.taskId);
     if (taskId === undefined) {
-      throw new CapMonsterError(
+      throw createCapMonsterError(
         "Response missing taskId",
         response.errorId ?? 0,
         response.errorCode ?? undefined,
@@ -144,10 +178,7 @@ export class CapMonster {
   async getTaskResult<T = Record<string, unknown>>(
     taskId: number | string,
   ): Promise<TaskResult<T>> {
-    const id = normalizeTaskId(taskId);
-    if (id === undefined) {
-      throw new CapMonsterError(`Invalid taskId: ${taskId}`, 1, "WRONG_CAPTCHA_ID");
-    }
+    const id = requireTaskId(taskId);
 
     try {
       const response = await this.post<RawApiResponse<T>>("/getTaskResult", {
@@ -156,7 +187,7 @@ export class CapMonster {
       });
 
       return {
-        status: response.status ?? "processing",
+        status: response.status === "ready" ? "ready" : "processing",
         solution: response.solution,
       };
     } catch (err: unknown) {
@@ -177,31 +208,8 @@ export class CapMonster {
     taskId: number | string,
     options: WaitForOptions = {},
   ): Promise<T> {
-    const intervalMs = options.intervalMs ?? 3_000;
-    const timeoutMs = options.timeoutMs ?? 120_000;
-    const startTime = Date.now();
-
-    for (;;) {
-      if (options.signal?.aborted) {
-        throw new CapMonsterError("waitForResult aborted", 0, "ABORTED");
-      }
-
-      const res = await this.getTaskResult<T>(taskId);
-
-      if (res.status === "ready" && res.solution) {
-        return res.solution;
-      }
-
-      if (Date.now() - startTime >= timeoutMs) {
-        throw new CapMonsterError(
-          "Timed out waiting for captcha solution",
-          0,
-          "TIMEOUT",
-        );
-      }
-
-      await delay(intervalMs, options.signal);
-    }
+    const solved = await this.poll<T>(taskId, options);
+    return solved.solution;
   }
 
   /**
@@ -220,14 +228,175 @@ export class CapMonster {
     task: TTask,
     options: WaitForOptions & CreateTaskOptions = {},
   ): Promise<TSolution> {
+    const solved = await this.solveDetailed<TSolution, TTask>(task, options);
+    return solved.solution;
+  }
+
+  /**
+   * Same as `solve`, and also returns the `taskId` so a rejected token can be reported.
+   */
+  async solveDetailed<
+    TSolution = Record<string, unknown>,
+    TTask extends { type: string } = { type: string },
+  >(
+    task: TTask,
+    options: WaitForOptions & CreateTaskOptions = {},
+  ): Promise<SolveResult<TSolution>> {
     const taskId = await this.createTask(task, {
       softId: options.softId,
       callbackUrl: options.callbackUrl,
     });
-    return this.waitForResult<TSolution>(taskId, options);
+    return this.poll<TSolution>(taskId, options);
+  }
+
+  /**
+   * Report an image captcha answer that was wrong.
+   *
+   * @see https://docs.capmonster.cloud/docs/api/bad-tokens/
+   */
+  async reportIncorrectImageCaptcha(taskId: number | string): Promise<ReportResult> {
+    return this.report("/reportIncorrectImageCaptcha", taskId);
+  }
+
+  /**
+   * Report a token captcha (reCAPTCHA, GeeTest, Turnstile, and similar) that the site rejected.
+   *
+   * @see https://docs.capmonster.cloud/docs/api/bad-tokens/
+   */
+  async reportIncorrectTokenCaptcha(taskId: number | string): Promise<ReportResult> {
+    return this.report("/reportIncorrectTokenCaptcha", taskId);
+  }
+
+  /**
+   * Alias of the token report. CapMonster documents `/reportIncorrectRecaptcha`
+   * as the same operation as `/reportIncorrectTokenCaptcha`.
+   */
+  async reportIncorrectRecaptcha(taskId: number | string): Promise<ReportResult> {
+    return this.report("/reportIncorrectRecaptcha", taskId);
+  }
+
+  /** Short alias of {@link reportIncorrectImageCaptcha}. */
+  async reportIncorrectImage(taskId: number | string): Promise<ReportResult> {
+    return this.reportIncorrectImageCaptcha(taskId);
+  }
+
+  /** Short alias of {@link reportIncorrectTokenCaptcha}. */
+  async reportIncorrectToken(taskId: number | string): Promise<ReportResult> {
+    return this.reportIncorrectTokenCaptcha(taskId);
+  }
+
+  private createTaskBody(
+    task: { type: string },
+    options: CreateTaskOptions,
+  ): Record<string, unknown> {
+    const payload: Record<string, unknown> = {
+      clientKey: this.clientKey,
+      task,
+    };
+
+    const softId = options.softId ?? this.softId;
+    if (hasSoftId(softId)) {
+      payload.softId = formatSoftId(softId);
+    }
+    if (options.callbackUrl) {
+      payload.callbackUrl = options.callbackUrl;
+    }
+    return payload;
+  }
+
+  private async report(path: string, taskId: number | string): Promise<ReportResult> {
+    const id = requireTaskId(taskId);
+    const response = await this.post<RawApiResponse>(path, {
+      clientKey: this.clientKey,
+      taskId: id,
+    });
+    if (response.status && response.status !== "success") {
+      throw createCapMonsterError(
+        `Report was not accepted (status: ${response.status})`,
+        response.errorId ?? 0,
+        response.errorCode ?? undefined,
+        200,
+        response,
+      );
+    }
+    return { status: "success" };
+  }
+
+  private async poll<T>(
+    taskId: number | string,
+    options: WaitForOptions,
+  ): Promise<SolveResult<T>> {
+    const id = requireTaskId(taskId);
+    const intervalMs = options.intervalMs ?? 3_000;
+    const timeoutMs = options.timeoutMs ?? 120_000;
+    const startTime = Date.now();
+    let attempt = 0;
+
+    if (options.initialDelayMs && options.initialDelayMs > 0) {
+      await delay(options.initialDelayMs, options.signal);
+    }
+
+    for (;;) {
+      throwIfAborted(options.signal);
+      attempt += 1;
+      const res = await this.getTaskResult<T>(id);
+      const update: PollUpdate<T> = {
+        taskId: id,
+        attempt,
+        status: res.status,
+        solution: res.solution,
+      };
+      options.onPoll?.(update);
+
+      if (res.status === "ready" && res.solution) {
+        return { taskId: id, solution: res.solution };
+      }
+
+      if (options.maxAttempts !== undefined && attempt >= options.maxAttempts) {
+        throw createCapMonsterError(
+          "Timed out waiting for captcha solution",
+          0,
+          "TIMEOUT",
+        );
+      }
+
+      if (Date.now() - startTime >= timeoutMs) {
+        throw createCapMonsterError(
+          "Timed out waiting for captcha solution",
+          0,
+          "TIMEOUT",
+        );
+      }
+
+      await delay(intervalMs, options.signal);
+    }
   }
 
   private async post<T extends RawApiResponse>(
+    path: string,
+    body: Record<string, unknown>,
+  ): Promise<T> {
+    const attempts = Math.max(0, this.retries) + 1;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      try {
+        return await this.postOnce<T>(path, body);
+      } catch (err: unknown) {
+        lastError = err;
+        if (attempt >= attempts || !isRetryableCapMonsterError(err)) {
+          throw err;
+        }
+        await delay(this.retryDelayMs * attempt);
+      }
+    }
+
+    // The loop always returns or throws. This guards the type checker.
+    // istanbul ignore next
+    throw new CapMonsterError("Request failed", 0);
+  }
+
+  private async postOnce<T extends RawApiResponse>(
     path: string,
     body: Record<string, unknown>,
   ): Promise<T> {
@@ -238,27 +407,33 @@ export class CapMonster {
       return data;
     } catch (err: unknown) {
       if (err instanceof CapMonsterError) throw err;
+      throw this.wrapTransportError(err);
+    }
+  }
 
-      if (axios.isAxiosError(err)) {
-        const status = err.response?.status ?? 0;
-        const data = isApiResponse(err.response?.data) ? err.response?.data : undefined;
-        const errorCode = data?.errorCode ?? undefined;
-        const message = data
-          ? describeCapMonsterError(
-              errorCode,
-              data.errorDescription ?? undefined,
-              data.errorId ?? 0,
-            )
-          : (err.message ?? `HTTP request failed with status ${status}`);
+  private wrapTransportError(err: unknown): CapMonsterError {
+    if (axios.isAxiosError(err)) {
+      const status = err.response?.status ?? 0;
+      const data = isApiResponse(err.response?.data) ? err.response?.data : undefined;
+      const errorCode = data?.errorCode ?? undefined;
+      const message = data
+        ? describeCapMonsterError(
+            errorCode,
+            data.errorDescription ?? undefined,
+            data.errorId ?? 0,
+          )
+        : (err.message ?? `HTTP request failed with status ${status}`);
 
-        throw new CapMonsterError(message, data?.errorId ?? 0, errorCode, status, data ?? err.response?.data);
-      }
-
-      throw new CapMonsterError(
-        err instanceof Error ? err.message : "Unknown error",
-        0,
+      return createCapMonsterError(
+        message,
+        data?.errorId ?? 0,
+        errorCode,
+        status,
+        data ?? err.response?.data,
       );
     }
+
+    return createCapMonsterError(err instanceof Error ? err.message : "Unknown error", 0);
   }
 }
 
@@ -268,7 +443,7 @@ function isApiResponse(value: unknown): value is RawApiResponse {
 
 function assertNoApiError(data: RawApiResponse | undefined, httpStatus: number): void {
   if (!data || typeof data !== "object") {
-    throw new CapMonsterError(
+    throw createCapMonsterError(
       "Unexpected non-JSON response from CapMonster Cloud API",
       0,
       undefined,
@@ -279,7 +454,7 @@ function assertNoApiError(data: RawApiResponse | undefined, httpStatus: number):
 
   if (data.errorId && data.errorId !== 0) {
     const errorCode = data.errorCode ?? undefined;
-    throw new CapMonsterError(
+    throw createCapMonsterError(
       describeCapMonsterError(errorCode, data.errorDescription ?? undefined, data.errorId),
       data.errorId,
       errorCode,
@@ -287,6 +462,27 @@ function assertNoApiError(data: RawApiResponse | undefined, httpStatus: number):
       data,
     );
   }
+}
+
+/**
+ * Apply optional client-key suffixes documented by CapMonster.
+ * Order matches the docs: module, then recognizing threshold, then nocache.
+ */
+export function effectiveClientKey(
+  clientKey: string,
+  options: Pick<CapMonsterOptions, "moduleName" | "recognizingThreshold" | "nocache">,
+): string {
+  let key = clientKey;
+  if (options.moduleName && options.moduleName.trim()) {
+    key = `${key}__${options.moduleName.trim()}`;
+  }
+  if (options.recognizingThreshold !== undefined && options.recognizingThreshold !== null) {
+    key = `${key}__recognizingthreshold_${options.recognizingThreshold}`;
+  }
+  if (options.nocache) {
+    key = `${key}__nocache`;
+  }
+  return key;
 }
 
 /** True when a softId should be sent. Empty string and 0 are treated as unset. */
@@ -304,6 +500,14 @@ export function formatSoftId(value: number | string): number | string {
   return trimmed;
 }
 
+function requireTaskId(taskId: number | string): number {
+  const id = normalizeTaskId(taskId);
+  if (id === undefined) {
+    throw createCapMonsterError(`Invalid taskId: ${taskId}`, 1, "WRONG_CAPTCHA_ID");
+  }
+  return id;
+}
+
 function normalizeTaskId(taskId: number | string | undefined | null): number | undefined {
   if (taskId === undefined || taskId === null || taskId === "") return undefined;
   const value = typeof taskId === "number" ? taskId : Number(taskId);
@@ -311,8 +515,20 @@ function normalizeTaskId(taskId: number | string | undefined | null): number | u
   return value;
 }
 
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) {
+    throw createCapMonsterError("waitForResult aborted", 0, "ABORTED");
+  }
+}
+
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
+    if (ms <= 0) {
+      throwIfAborted(signal);
+      resolve();
+      return;
+    }
+
     const timer = setTimeout(() => {
       signal?.removeEventListener("abort", onAbort);
       resolve();
@@ -320,7 +536,7 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
     const onAbort = () => {
       clearTimeout(timer);
-      reject(new CapMonsterError("Operation aborted", 0, "ABORTED"));
+      reject(createCapMonsterError("Operation aborted", 0, "ABORTED"));
     };
 
     if (signal) {

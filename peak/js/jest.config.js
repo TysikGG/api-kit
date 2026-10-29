@@ -3,6 +3,14 @@ module.exports = {
   testEnvironment: "node",
   testMatch: ["**/test/**/*.test.ts"],
   testPathIgnorePatterns: ["/node_modules/", "/test/live/"],
+  collectCoverageFrom: ["src/**/*.ts"],
+  coverageThreshold: {
+    global: {
+      lines: 95,
+      statements: 95,
+    },
+  },
+  coverageReporters: ["text", "text-summary"],
   transform: {
     "^.+\\.tsx?$": [
       "ts-jest",

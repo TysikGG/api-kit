@@ -1,7 +1,7 @@
 {
   "name": "peak-client",
   "version": "0.1.0",
-  "description": "TypeScript client for the Peak CAPTCHA solving API (Cloudflare Turnstile and 5-second challenge)",
+  "description": "TypeScript client for the Peak CAPTCHA solving API (Cloudflare Turnstile, 5-second challenge, and AWS WAF)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,8 +15,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest --coverage",
+    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/ --coverage=false"
   },
   "repository": {
     "type": "git",
@@ -29,7 +30,8 @@
     "cloudflare",
     "captcha",
     "turnstile-solver",
-    "cf-challenge"
+    "cf-challenge",
+    "aws-waf"
   ],
   "license": "ISC",
   "engines": {
@@ -44,6 +46,7 @@
     "axios-mock-adapter": "^2.1.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }

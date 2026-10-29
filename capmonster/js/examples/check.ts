@@ -9,7 +9,9 @@ async function main() {
 
   const client = new CapMonster({ clientKey });
   const balance = await client.getBalance();
+  const userAgent = await client.getUserAgent();
   console.log("Account balance:", balance);
+  console.log("Current user agent:", userAgent);
 }
 
 main().catch(console.error);

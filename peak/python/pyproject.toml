@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "peak-client"
 version = "0.1.0"
-description = "Python client for the Peak CAPTCHA solving API"
+description = "Python client for the Peak CAPTCHA solving API (Turnstile, Cloudflare 5s, and AWS WAF)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "ISC"
@@ -20,6 +20,8 @@ Documentation = "https://peak.fo/docs"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -32,6 +34,8 @@ markers = [
   "live: calls the real Peak API and needs PEAK_API_KEY",
 ]
 testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "--cov=peak --cov-report=term-missing --cov-fail-under=95"
 
 [tool.ruff]
 target-version = "py310"

@@ -1,12 +1,19 @@
-import { GrizzlySmsError } from "./errors.js";
+import { errorFrom, GrizzlySmsError } from "./errors.js";
 import type {
   ActivationStatus,
+  ActivationWebhook,
   ActiveActivation,
   CountryInfo,
+  NumberStock,
   OrderedNumber,
   OrderedNumberV2,
   PriceQuote,
   PricesByCountry,
+  RentHistory,
+  RentMessage,
+  RentPhone,
+  RentPrice,
+  RentStatus,
   ServiceInfo,
   SetStatusResult,
 } from "./types.js";
@@ -158,6 +165,8 @@ export function parseCountries(data: unknown): CountryInfo[] {
       hin: row.hin === undefined ? undefined : String(row.hin),
       ara: row.ara === undefined ? undefined : String(row.ara),
       fra: row.fra === undefined ? undefined : String(row.fra),
+      visible: optionalNumber(row.visible),
+      retry: optionalNumber(row.retry),
     }))
     .filter((country) => Number.isFinite(country.id));
 }
@@ -191,4 +200,177 @@ export function parseActivations(data: unknown): ActiveActivation[] {
       smsText: row.smsText === undefined ? undefined : String(row.smsText),
     };
   });
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function requireRecord(data: unknown): Record<string, unknown> {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
+  }
+  return data as Record<string, unknown>;
+}
+
+export function parseNumbersStatus(data: unknown): NumberStock[] {
+  const row = requireRecord(data);
+  const stocks: NumberStock[] = [];
+  for (const [key, value] of Object.entries(row)) {
+    const count = Number(value);
+    if (!Number.isFinite(count)) continue;
+    const split = key.lastIndexOf("_");
+    stocks.push({
+      key,
+      service: split === -1 ? key : key.slice(0, split),
+      suffix: split === -1 ? "" : key.slice(split + 1),
+      count,
+    });
+  }
+  return stocks;
+}
+
+export function parseRentPhone(data: unknown): RentPhone {
+  const row = requireRecord(data);
+  const phone = row.phone;
+  if (!phone || typeof phone !== "object") {
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
+  }
+  const item = phone as Record<string, unknown>;
+  const id = item.id;
+  const number = item.number;
+  if (
+    (typeof id !== "number" && typeof id !== "string") ||
+    (typeof number !== "number" && typeof number !== "string")
+  ) {
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
+  }
+  return {
+    id: String(id),
+    number: String(number),
+    endDate: item.endDate === undefined ? "" : String(item.endDate),
+  };
+}
+
+function messageList(values: unknown): RentMessage[] {
+  if (!values || typeof values !== "object") return [];
+  return Object.values(values as Record<string, unknown>)
+    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    .map((item) => ({
+      phoneFrom: item.phoneFrom === undefined ? undefined : String(item.phoneFrom),
+      service: item.service === undefined ? undefined : String(item.service),
+      text:
+        item.text !== undefined
+          ? String(item.text)
+          : item.test !== undefined
+            ? String(item.test)
+            : undefined,
+      date: item.date === undefined ? undefined : String(item.date),
+    }));
+}
+
+export function parseRentStatus(data: unknown): RentStatus {
+  const row = requireRecord(data);
+  const quantity = optionalNumber(row.quantity) ?? messageList(row.values).length;
+  return { quantity, messages: messageList(row.values) };
+}
+
+export function parseRentHistory(data: unknown): RentHistory {
+  const row = requireRecord(data);
+  const values =
+    row.values && typeof row.values === "object"
+      ? Object.values(row.values as Record<string, unknown>)
+      : [];
+  const entries = values
+    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+    .map((item) => ({
+      date: item.date === undefined ? undefined : String(item.date),
+      price: optionalNumber(item.price),
+      hours: optionalNumber(item.hours),
+    }));
+  return { quantity: optionalNumber(row.quantity) ?? entries.length, entries };
+}
+
+export function parseRentPrices(data: unknown): RentPrice[] {
+  const row = requireRecord(data);
+  const values = row.values;
+  if (!values || typeof values !== "object") return [];
+  const quotes: RentPrice[] = [];
+  for (const [country, services] of Object.entries(values as Record<string, unknown>)) {
+    if (!services || typeof services !== "object") continue;
+    for (const [service, quote] of Object.entries(services as Record<string, unknown>)) {
+      if (!quote || typeof quote !== "object") continue;
+      const item = quote as Record<string, unknown>;
+      const cost = optionalNumber(item.cost);
+      const count = optionalNumber(item.count);
+      if (cost === undefined || count === undefined) continue;
+      quotes.push({
+        country,
+        service,
+        cost,
+        count,
+        maxHours: optionalNumber(item.max_hours),
+      });
+    }
+  }
+  return quotes;
+}
+
+/**
+ * Parse a profile webhook body. `activationId` is required.
+ *
+ * @example
+ * ```ts
+ * const event = parseActivationWebhook(JSON.parse(rawBody));
+ * ```
+ */
+export function parseActivationWebhook(data: unknown): ActivationWebhook {
+  const row = requireRecord(data);
+  const activationId = row.activationId ?? row.activation_id;
+  if (typeof activationId !== "number" && typeof activationId !== "string") {
+    throw errorFrom("UNEXPECTED_RESPONSE", data);
+  }
+  return {
+    activationId: String(activationId),
+    service: row.service === undefined ? undefined : String(row.service),
+    text: row.text === undefined ? undefined : String(row.text),
+    code: row.code === undefined ? undefined : String(row.code),
+    country: row.country === undefined ? undefined : String(row.country),
+    receivedAt:
+      row.receivedAt === undefined && row.received_at === undefined
+        ? undefined
+        : String(row.receivedAt ?? row.received_at),
+  };
+}
+
+export function axiosProxy(proxy: string): {
+  protocol: string;
+  host: string;
+  port: number;
+  auth?: { username: string; password: string };
+} {
+  let url: URL;
+  try {
+    url = new URL(proxy);
+  } catch {
+    throw new GrizzlySmsError("BAD_ACTION", "proxy must be an absolute URL");
+  }
+  if (!url.hostname) {
+    throw new GrizzlySmsError("BAD_ACTION", "proxy must include a host");
+  }
+  const port = url.port ? Number(url.port) : url.protocol === "https:" ? 443 : 80;
+  const auth = url.username
+    ? {
+        username: decodeURIComponent(url.username),
+        password: decodeURIComponent(url.password),
+      }
+    : undefined;
+  return {
+    protocol: url.protocol.replace(":", "") || "http",
+    host: url.hostname,
+    port,
+    auth,
+  };
 }
