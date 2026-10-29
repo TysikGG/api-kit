@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "onlinesim"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python client for the OnlineSIM virtual number and SMS activation API"
 readme = "README.md"
 requires-python = ">=3.10"
