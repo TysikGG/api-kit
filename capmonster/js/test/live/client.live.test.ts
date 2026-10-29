@@ -4,6 +4,12 @@ const apiKey = process.env.CAPMONSTER_API_KEY;
 const describeLive = apiKey ? describe : describe.skip;
 
 describeLive("CapMonster Cloud live API", () => {
+  it("fetches the current user agent", async () => {
+    const client = new CapMonster(apiKey!);
+    const userAgent = await client.getUserAgent();
+    expect(userAgent).toContain("Mozilla");
+  });
+
   it("fetches balance", async () => {
     const client = new CapMonster(apiKey!);
     const balance = await client.getBalance();

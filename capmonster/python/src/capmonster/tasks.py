@@ -7,6 +7,7 @@ documented at https://docs.capmonster.cloud/docs/captchas/.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 
@@ -228,3 +229,111 @@ def alibaba(website_url: str, metadata: dict[str, Any], **extra: Any) -> dict[st
         {"websiteURL": website_url, "metadata": metadata, **extra},
         "alibaba",
     )
+
+
+def recaptcha_v2_proxyless(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Legacy proxyless reCAPTCHA v2 type. Current docs use `RecaptchaV2Task`."""
+    return _task(
+        "RecaptchaV2TaskProxyless",
+        {"websiteURL": website_url, "websiteKey": website_key, **extra},
+    )
+
+
+def no_captcha(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Legacy `NoCaptchaTask` alias of reCAPTCHA v2."""
+    return _task("NoCaptchaTask", {"websiteURL": website_url, "websiteKey": website_key, **extra})
+
+
+def no_captcha_proxyless(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Legacy `NoCaptchaTaskProxyless` alias of reCAPTCHA v2."""
+    return _task(
+        "NoCaptchaTaskProxyless",
+        {"websiteURL": website_url, "websiteKey": website_key, **extra},
+    )
+
+
+def hcaptcha_proxyless(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """hCaptcha using the proxyless type name."""
+    return _task(
+        "HCaptchaTaskProxyless",
+        {"websiteURL": website_url, "websiteKey": website_key, **extra},
+    )
+
+
+def geetest_v3(website_url: str, gt: str, challenge: str, **extra: Any) -> dict[str, Any]:
+    """GeeTest v3. `challenge` must be fetched immediately before createTask."""
+    return _task(
+        "GeeTestTask",
+        {"websiteURL": website_url, "gt": gt, "challenge": challenge, "version": "3", **extra},
+    )
+
+
+def geetest_v4(website_url: str, gt: str, **extra: Any) -> dict[str, Any]:
+    """GeeTest v4. `gt` is the captcha id."""
+    return _task("GeeTestTask", {"websiteURL": website_url, "gt": gt, "version": "4", **extra})
+
+
+def turnstile_challenge_token(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Cloudflare Challenge that returns a token."""
+    return _task(
+        "TurnstileTask",
+        {
+            "websiteURL": website_url,
+            "websiteKey": website_key,
+            "cloudflareTaskType": "token",
+            **extra,
+        },
+    )
+
+
+def turnstile_challenge_cookie(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Cloudflare Challenge that returns a `cf_clearance` cookie. Requires your proxy."""
+    return _task(
+        "TurnstileTask",
+        {
+            "websiteURL": website_url,
+            "websiteKey": website_key,
+            "cloudflareTaskType": "cf_clearance",
+            **extra,
+        },
+    )
+
+
+def turnstile_waiting_room(website_url: str, website_key: str, **extra: Any) -> dict[str, Any]:
+    """Cloudflare Waiting Room. Requires your proxy and `htmlPageBase64`."""
+    return _task(
+        "TurnstileTask",
+        {
+            "websiteURL": website_url,
+            "websiteKey": website_key,
+            "cloudflareTaskType": "wait_room",
+            **extra,
+        },
+    )
+
+
+def complex_recaptcha(**extra: Any) -> dict[str, Any]:
+    """ComplexImageTask for a reCAPTCHA click or grid image."""
+    return _task("ComplexImageTask", extra, "recaptcha")
+
+
+def complex_hcaptcha(**extra: Any) -> dict[str, Any]:
+    """ComplexImageTask for an hCaptcha image."""
+    return _task("ComplexImageTask", extra, "hcaptcha")
+
+
+def complex_funcaptcha(**extra: Any) -> dict[str, Any]:
+    """ComplexImageTask for a FunCaptcha image."""
+    return _task("ComplexImageTask", extra, "funcaptcha")
+
+
+def complex_recognition(**extra: Any) -> dict[str, Any]:
+    """ComplexImageTask for a generic recognition image."""
+    return _task("ComplexImageTask", extra, "recognition")
+
+
+def with_proxy(task: Mapping[str, Any], **proxy: Any) -> dict[str, Any]:
+    """Copy proxy fields onto a task object."""
+    merged = dict(task)
+    merged.update(proxy)
+    return merged

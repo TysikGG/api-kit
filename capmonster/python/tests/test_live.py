@@ -16,6 +16,15 @@ API_KEY = os.environ.get("CAPMONSTER_API_KEY")
 
 @pytest.mark.live
 @pytest.mark.skipif(not API_KEY, reason="CAPMONSTER_API_KEY not configured")
+def test_live_user_agent() -> None:
+    assert API_KEY is not None
+    with CapMonster(API_KEY) as client:
+        user_agent = client.get_user_agent()
+        assert "Mozilla" in user_agent
+
+
+@pytest.mark.live
+@pytest.mark.skipif(not API_KEY, reason="CAPMONSTER_API_KEY not configured")
 def test_live_balance() -> None:
     assert API_KEY is not None
     with CapMonster(API_KEY) as client:

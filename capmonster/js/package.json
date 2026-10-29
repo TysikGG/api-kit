@@ -1,7 +1,7 @@
 {
   "name": "capmonster-client",
   "version": "0.1.0",
-  "description": "TypeScript client for the CapMonster Cloud captcha recognition API (reCAPTCHA, Turnstile, GeeTest, DataDome, Amazon WAF)",
+  "description": "TypeScript client for the CapMonster Cloud captcha recognition API: every documented task type, balance, user-agent, and incorrect-solution reports",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -15,8 +15,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "jest",
-    "test:live": "jest --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "jest --coverage",
+    "test:live": "jest --coverage=false --testPathPattern=test/live --testPathIgnorePatterns=/node_modules/"
   },
   "repository": {
     "type": "git",

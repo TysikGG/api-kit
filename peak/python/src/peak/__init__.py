@@ -1,26 +1,101 @@
 """Peak Solutions CAPTCHA solving client."""
 
+from .async_client import AsyncPeak
+from .clearance import build_clearance_request, clearance_user_agent, cookie_header
 from .client import APP_ID, Peak
-from .errors import PeakError
+from .constants import (
+    DEFAULT_BASE_URL,
+    DEFAULT_RETRY_DELAY,
+    DEFAULT_TIMEOUT,
+    TASK_AWS_WAF,
+    TASK_CLOUDFLARE_5S,
+    TASK_TURNSTILE,
+    TASK_TURNSTILE_PROXYLESS,
+    WINDOWS_CHROME_USER_AGENT,
+)
+from .errors import (
+    AuthenticationError,
+    BadRequestError,
+    ErrorCode,
+    InsufficientBalanceError,
+    PeakError,
+    RateLimitError,
+    RetryTimeoutError,
+    ServiceUnavailableError,
+    SolveError,
+    TaskDisabledError,
+    UpstreamError,
+    classify_error,
+    is_retryable,
+)
 from .types import (
+    AwsWafResult,
     BalanceData,
+    ClearanceRequest,
     Cloudflare5sAttributes,
     Cloudflare5sResult,
     PackageBalance,
     PayPerSolveBalance,
+    ProxyConfig,
     RawApiResponse,
+    SolveEvent,
     TurnstileResult,
 )
+from .util import (
+    assert_http_proxy,
+    assert_http_url,
+    assert_page_url,
+    ensure_trailing_slash,
+    format_balance,
+    format_proxy,
+)
+
+PeakClient = Peak
 
 __all__ = [
     "APP_ID",
+    "AsyncPeak",
+    "AuthenticationError",
+    "AwsWafResult",
+    "BadRequestError",
     "BalanceData",
+    "ClearanceRequest",
     "Cloudflare5sAttributes",
     "Cloudflare5sResult",
+    "DEFAULT_BASE_URL",
+    "DEFAULT_RETRY_DELAY",
+    "DEFAULT_TIMEOUT",
+    "ErrorCode",
+    "InsufficientBalanceError",
     "PackageBalance",
     "PayPerSolveBalance",
     "Peak",
+    "PeakClient",
     "PeakError",
+    "ProxyConfig",
+    "RateLimitError",
     "RawApiResponse",
+    "RetryTimeoutError",
+    "ServiceUnavailableError",
+    "SolveError",
+    "SolveEvent",
+    "TASK_AWS_WAF",
+    "TASK_CLOUDFLARE_5S",
+    "TASK_TURNSTILE",
+    "TASK_TURNSTILE_PROXYLESS",
+    "TaskDisabledError",
     "TurnstileResult",
+    "UpstreamError",
+    "WINDOWS_CHROME_USER_AGENT",
+    "assert_http_proxy",
+    "assert_http_url",
+    "assert_page_url",
+    "build_clearance_request",
+    "classify_error",
+    "clearance_user_agent",
+    "cookie_header",
+    "ensure_trailing_slash",
+    "format_balance",
+    "format_proxy",
+    "is_retryable",
 ]

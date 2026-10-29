@@ -20,6 +20,7 @@ Documentation = "https://grizzlysms.com/docs"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-cov>=5",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -32,6 +33,7 @@ markers = [
   "live: calls the real Grizzly SMS API and needs GRIZZLY_API_KEY",
 ]
 testpaths = ["tests"]
+addopts = "--cov=grizzly_sms --cov-report=term-missing"
 
 [tool.ruff]
 target-version = "py310"

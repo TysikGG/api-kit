@@ -20,6 +20,7 @@ Documentation = "https://www.chaojiying.com/api-5.html"
 [dependency-groups]
 dev = [
   "pytest>=8",
+  "pytest-cov>=6",
   "pytest-httpx>=0.30",
   "ruff>=0.8",
 ]
@@ -32,11 +33,17 @@ markers = [
   "live: calls the real Chaojiying API and needs CHAOJIYING_USER and CHAOJIYING_PASS",
 ]
 testpaths = ["tests"]
+addopts = "--cov=chaojiying --cov-report=term-missing --cov-fail-under=95"
 
 [tool.ruff]
 target-version = "py310"
 line-length = 100
 src = ["src", "tests", "examples"]
 
+[tool.coverage.run]
+branch = true
+source = ["chaojiying"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

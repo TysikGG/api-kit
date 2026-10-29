@@ -1,28 +1,50 @@
-"""Client for the Peak Solutions CAPTCHA solving API."""
+"""Synchronous client for the Peak Solutions CAPTCHA solving API."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import time
+from collections.abc import Callable, Mapping
 from typing import Any
 
 import httpx
 
-from .errors import PeakError
-from .types import BalanceData, Cloudflare5sResult, TurnstileResult
+from .constants import APP_ID, DEFAULT_BASE_URL, DEFAULT_RETRY_DELAY, DEFAULT_TIMEOUT
+from .errors import ErrorCode, PeakError, RetryTimeoutError, classify_error, is_retryable
+from .protocol import (
+    attach_app_id,
+    build_aws_waf,
+    build_cloudflare_5s,
+    build_turnstile,
+    read_balance,
+    read_solve,
+)
+from .types import (
+    AwsWafResult,
+    BalanceData,
+    Cloudflare5sResult,
+    SolveEvent,
+    TurnstileResult,
+)
+from .util import ProxyInput, assert_http_proxy, clamp_retries
 
-_DEFAULT_BASE_URL = "https://api.peak.fo"
-_DEFAULT_TIMEOUT = 60.0
-
-APP_ID = "app_05c1f418153804ec393a7211"
+ResultHook = Callable[[SolveEvent], None]
 
 
 class Peak:
     """Client for the Peak CAPTCHA solving API.
 
+    Solves return in the same HTTP call. There is no task id to poll.
+    Use ``timeout`` for one request and ``retries`` for transient failures.
+
     Args:
-        api_key: Peak API key (`pk_...`).
-        base_url: Custom API base URL (defaults to `https://api.peak.fo`).
-        timeout: Request timeout in seconds (defaults to 60.0).
+        api_key: Peak API key (``pk_...``).
+        base_url: API base URL. Defaults to ``https://api.peak.fo``.
+        timeout: Request timeout in seconds. Defaults to 60.
+        http_proxy: HTTP(S) proxy used only to reach the Peak API.
+        retries: Extra attempts after a retryable failure. Defaults to 0.
+        retry_delay: Seconds to wait between retries. Defaults to 1.
+        retry_timeout: Optional wall-clock budget for the whole retry loop, in seconds.
+        on_result: Called after every successful solve.
 
     Examples:
         >>> from peak import Peak
@@ -34,22 +56,34 @@ class Peak:
         self,
         api_key: str,
         *,
-        base_url: str = _DEFAULT_BASE_URL,
-        timeout: float = _DEFAULT_TIMEOUT,
+        base_url: str = DEFAULT_BASE_URL,
+        timeout: float = DEFAULT_TIMEOUT,
+        http_proxy: str | None = None,
+        retries: int = 0,
+        retry_delay: float = DEFAULT_RETRY_DELAY,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
     ) -> None:
         if not api_key or not api_key.strip():
-            raise PeakError("API key is required", 0)
+            raise PeakError("API key is required", 0, code=ErrorCode.MISSING_API_KEY)
 
         self._api_key = api_key.strip()
-        self._http = httpx.Client(
-            base_url=base_url.rstrip("/"),
-            timeout=timeout,
-            headers={
+        self._retries = clamp_retries(retries, 0)
+        self._retry_delay = retry_delay
+        self._retry_timeout = retry_timeout
+        self._on_result = on_result
+        client_kwargs: dict[str, Any] = {
+            "base_url": base_url.rstrip("/"),
+            "timeout": timeout,
+            "headers": {
                 "X-API-Key": self._api_key,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-        )
+        }
+        if http_proxy:
+            client_kwargs["proxy"] = assert_http_proxy(http_proxy)
+        self._http = httpx.Client(**client_kwargs)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -61,153 +95,275 @@ class Peak:
     def __exit__(self, *exc: object) -> None:
         self.close()
 
-    def get_balance(self) -> BalanceData:
-        """Retrieve current account balance or package status.
+    def get_balance(
+        self,
+        *,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+    ) -> BalanceData:
+        """Retrieve the current account balance or package status.
 
-        Returns:
-            Balance data for pay-per-solve or package accounts.
-
-        Examples:
-            >>> with Peak("pk_...") as client:
-            ...     balance = client.get_balance()
-            ...     print(balance["type"])
+        Does not spend credits.
         """
-        response = self._request("GET", "/balance")
-        if not response.get("success") or "data" not in response:
-            raise PeakError("Failed to retrieve balance", 200, response)
-        return response["data"]
+
+        def attempt() -> BalanceData:
+            return read_balance(self._request("GET", "/balance"))
+
+        return self._run(
+            attempt,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=None,
+            task_type="",
+            emit=False,
+        )
 
     def solve_turnstile(
         self,
         url: str,
         sitekey: str,
         *,
-        proxy: str | None = None,
+        proxy: ProxyInput | None = None,
         action: str | None = None,
         cdata: str | None = None,
+        task_type: str | None = None,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
     ) -> TurnstileResult:
         """Solve a Cloudflare Turnstile challenge.
 
-        Uses ``TurnstileTaskProxyLess`` when proxy is omitted, or
-        ``turnstiletask`` when a proxy is provided.
-
-        Args:
-            url: Target page URL (recommended with trailing slash).
-            sitekey: Turnstile sitekey.
-            proxy: Proxy in ``http://user:pass@ip:port`` format.
-            action: Turnstile action parameter.
-            cdata: Turnstile cdata parameter.
-
-        Returns:
-            Dictionary containing the ``token`` string.
-
-        Examples:
-            >>> with Peak("pk_...") as client:
-            ...     res = client.solve_turnstile("https://example.com/", "0x4AAAAAAA...")
-            ...     print(res["token"])
+        Uses ``TurnstileTaskProxyLess`` when ``proxy`` is omitted, or
+        ``turnstiletask`` when a proxy is provided. ``task_type`` overrides that.
+        Submit ``token`` as ``cf-turnstile-response``.
         """
-        task_type = "turnstiletask" if proxy else "TurnstileTaskProxyLess"
-        payload: dict[str, Any] = {
-            "task_type": task_type,
-            "url": url,
-            "sitekey": sitekey,
-        }
-        if proxy:
-            payload["proxy"] = proxy
-        if action:
-            payload["action"] = action
-        if cdata:
-            payload["cdata"] = cdata
-
-        return self.solve(payload)
+        payload = build_turnstile(
+            url,
+            sitekey,
+            proxy=proxy,
+            action=action,
+            cdata=cdata,
+            task_type=task_type,
+        )
+        return self.solve(
+            payload,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=on_result,
+        )
 
     def solve_cloudflare_5s(
         self,
         url: str,
-        proxy: str,
+        proxy: ProxyInput,
         *,
         user_agent: str | None = None,
         html: str | None = None,
+        task_type: str | None = None,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
     ) -> Cloudflare5sResult:
         """Solve a Cloudflare 5-second challenge (WAF / Under Attack mode).
 
-        Args:
-            url: Target page URL (must end with trailing slash ``/``).
-            proxy: Sticky proxy in ``http://user:pass@ip:port`` format.
-            user_agent: Windows Chrome user-agent string.
-            html: Pre-fetched HTML string to skip initial fetch.
-
-        Returns:
-            Dictionary with cookies, headers, attributes, and ``cf_rt``.
-
-        Examples:
-            >>> with Peak("pk_...") as client:
-            ...     res = client.solve_cloudflare_5s("https://example.com/", "http://user:pass@ip:port")
-            ...     print(res["cookies"])
+        ``proxy`` must be a sticky session proxy. Only Windows Chrome user-agents
+        are accepted by Peak.
         """
-        payload: dict[str, Any] = {
-            "task_type": "cloudflare5stask",
-            "url": url,
-            "proxy": proxy,
-        }
-        if user_agent:
-            payload["user_agent"] = user_agent
-        if html:
-            payload["html"] = html
+        payload = build_cloudflare_5s(
+            url,
+            proxy,
+            user_agent=user_agent,
+            html=html,
+            task_type=task_type,
+        )
+        return self.solve(
+            payload,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=on_result,
+        )
 
-        return self.solve(payload)
-
-    def solve(self, task: Mapping[str, Any]) -> Any:
-        """Send a raw solve request with any task payload.
-
-        Automatically attaches the application identifier.
-
-        Args:
-            task: Task dictionary containing task parameters.
-
-        Returns:
-            Extracted ``data`` field from the API response.
-        """
-        payload = dict(task)
-        payload["appId"] = APP_ID
-
-        response = self._request("POST", "/solve", json_data=payload)
-
-        if not response.get("success") or response.get("error"):
-            error_msg = response.get("error") or "Solve task failed"
-            raise PeakError(error_msg, 200, response)
-
-        if "data" not in response:
-            raise PeakError("Missing response data from Peak API", 200, response)
-
-        return response["data"]
-
-    def _request(
+    def solve_cloudflare_waf(
         self,
-        method: str,
-        path: str,
+        url: str,
+        proxy: ProxyInput,
         *,
-        json_data: Any = None,
-    ) -> dict[str, Any]:
+        user_agent: str | None = None,
+        html: str | None = None,
+        task_type: str | None = None,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
+    ) -> Cloudflare5sResult:
+        """Alias of :meth:`solve_cloudflare_5s`. Matches the official Python SDK name."""
+        return self.solve_cloudflare_5s(
+            url,
+            proxy,
+            user_agent=user_agent,
+            html=html,
+            task_type=task_type,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=on_result,
+        )
+
+    def solve_aws_waf(
+        self,
+        url: str,
+        sdk_url: str,
+        proxy: ProxyInput,
+        user_agent: str,
+        *,
+        os: str = "ios",
+        task_type: str | None = None,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
+    ) -> AwsWafResult:
+        """Solve an AWS WAF challenge for an iOS or Android SDK (``awswaftask``).
+
+        When Peak has this task disabled the call raises ``TaskDisabledError``.
+        """
+        payload = build_aws_waf(
+            url,
+            sdk_url,
+            proxy,
+            user_agent,
+            os=os,
+            task_type=task_type,
+        )
+        return self.solve(
+            payload,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=on_result,
+        )
+
+    def solve(
+        self,
+        task: Mapping[str, Any],
+        *,
+        retries: int | None = None,
+        retry_delay: float | None = None,
+        retry_timeout: float | None = None,
+        on_result: ResultHook | None = None,
+    ) -> Any:
+        """Send a raw solve body.
+
+        The library app id is always written to ``appId`` and replaces any value
+        already present on ``task``.
+        """
+        payload = attach_app_id(task)
+        task_type = payload.get("task_type")
+        task_name = task_type if isinstance(task_type, str) else ""
+
+        def attempt() -> Any:
+            return read_solve(self._request("POST", "/solve", json_data=payload))
+
+        return self._run(
+            attempt,
+            retries=retries,
+            retry_delay=retry_delay,
+            retry_timeout=retry_timeout,
+            on_result=on_result,
+            task_type=task_name,
+            emit=True,
+        )
+
+    def _run(
+        self,
+        attempt: Callable[[], Any],
+        *,
+        retries: int | None,
+        retry_delay: float | None,
+        retry_timeout: float | None,
+        on_result: ResultHook | None,
+        task_type: str,
+        emit: bool,
+    ) -> Any:
+        resolved_retries = clamp_retries(retries, self._retries)
+        delay = self._retry_delay if retry_delay is None else retry_delay
+        budget = self._retry_timeout if retry_timeout is None else retry_timeout
+        started = time.monotonic()
+        attempt_no = 0
+        while True:
+            try:
+                data = attempt()
+            except PeakError as err:
+                if not is_retryable(err) or attempt_no >= resolved_retries:
+                    raise
+                attempt_no += 1
+                _check_budget(budget, started, err)
+                if delay and delay > 0:
+                    time.sleep(delay)
+                _check_budget(budget, started, err)
+                continue
+            if emit:
+                _emit(self._on_result, on_result, task_type, data)
+            return data
+
+    def _request(self, method: str, path: str, *, json_data: Any = None) -> Any:
         try:
             res = self._http.request(method, path, json=json_data)
+        except httpx.TimeoutException as err:
+            raise PeakError(str(err), 0, code=ErrorCode.REQUEST_TIMED_OUT) from err
         except httpx.HTTPError as err:
-            raise PeakError(str(err), 0) from err
+            raise PeakError(str(err), 0, code=ErrorCode.NETWORK) from err
+        except RuntimeError as err:
+            raise PeakError(str(err), 0, code=ErrorCode.NETWORK) from err
+        return _decode(res)
 
-        try:
-            data = res.json()
-        except ValueError:
-            data = None
 
-        if res.is_error:
-            error_msg = (
-                data.get("error")
-                if isinstance(data, dict) and data.get("error")
-                else res.text or f"HTTP {res.status_code}"
-            )
-            raise PeakError(error_msg, res.status_code, data)
+def _decode(res: httpx.Response) -> Any:
+    try:
+        data = res.json()
+    except ValueError:
+        data = None
+    if res.is_error:
+        if isinstance(data, dict) and data.get("error"):
+            message = str(data["error"])
+        else:
+            message = res.text or f"HTTP {res.status_code}"
+        raise classify_error(message, res.status_code, data if data is not None else res.text)
+    if not isinstance(data, dict):
+        raise PeakError(
+            "Unexpected non-JSON response from Peak API",
+            res.status_code,
+            data if data is not None else res.text,
+        )
+    return data
 
-        if not isinstance(data, dict):
-            raise PeakError("Unexpected non-JSON response from Peak API", res.status_code, res.text)
 
-        return data
+def _check_budget(budget: float | None, started: float, cause: BaseException) -> None:
+    if budget is None:
+        return
+    if time.monotonic() - started >= budget:
+        raise RetryTimeoutError("Retry timeout exceeded", cause)
+
+
+__all__ = ["APP_ID", "Peak"]
+
+
+def _emit(
+    client_hook: ResultHook | None,
+    call_hook: ResultHook | None,
+    task_type: str,
+    data: Any,
+) -> None:
+    event: SolveEvent = {"task_type": task_type, "data": data}
+    if call_hook is not None:
+        call_hook(event)
+    if client_hook is not None and client_hook is not call_hook:
+        client_hook(event)
+
+
