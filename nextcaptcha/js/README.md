@@ -1,14 +1,14 @@
-# @tysikgg/nextcaptcha
+# nextcaptcha-client
 
-[![npm version](https://img.shields.io/npm/v/@tysikgg/nextcaptcha.svg)](https://www.npmjs.com/package/@tysikgg/nextcaptcha)
+[![npm version](https://img.shields.io/npm/v/nextcaptcha-client.svg)](https://www.npmjs.com/package/nextcaptcha-client)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
-[![Node.js Version](https://img.shields.io/node/v/@tysikgg/nextcaptcha.svg)](https://nodejs.org)
+[![Node.js Version](https://img.shields.io/node/v/nextcaptcha-client.svg)](https://nodejs.org)
 
 Modern, fully typed TypeScript / Node.js client for the [NextCaptcha API](https://nextcaptcha.com/apidocs). Supports the documented reCAPTCHA v2/v3/Enterprise (including high-score and mobile), Cloudflare Turnstile, and the hCaptcha and FunCaptcha task types submitted by the official NextCaptcha clients.
 
 Official API documentation: <https://nextcaptcha.com/apidocs>
 
-Published as `@tysikgg/nextcaptcha` because the unscoped `nextcaptcha` name is too similar to an existing npm package.
+Published as `nextcaptcha-client` because the unscoped `nextcaptcha` name is too similar to an existing npm package.
 
 ---
 
@@ -27,7 +27,7 @@ Published as `@tysikgg/nextcaptcha` because the unscoped `nextcaptcha` name is t
 ## Installation
 
 ```bash
-npm install @tysikgg/nextcaptcha
+npm install nextcaptcha-client
 ```
 
 Requires Node.js 18 or higher.
@@ -41,7 +41,7 @@ The quick check only inspects your account balance. It does not submit tasks or 
 ### TypeScript / ESM
 
 ```ts
-import { NextCaptcha } from "@tysikgg/nextcaptcha";
+import { NextCaptcha } from "nextcaptcha-client";
 
 const client = new NextCaptcha({
   clientKey: process.env.NEXTCAPTCHA_API_KEY!,
@@ -54,7 +54,7 @@ console.log(`Balance: ${balance.balance}`);
 ### CommonJS
 
 ```js
-const { NextCaptcha } = require("@tysikgg/nextcaptcha");
+const { NextCaptcha } = require("nextcaptcha-client");
 
 async function main() {
   const client = new NextCaptcha({
@@ -77,7 +77,7 @@ main().catch(console.error);
 `client.solve()` creates the task and polls `getTaskResult` until the solution is ready:
 
 ```ts
-import { NextCaptcha, recaptchaV2Task } from "@tysikgg/nextcaptcha";
+import { NextCaptcha, recaptchaV2Task } from "nextcaptcha-client";
 
 const client = new NextCaptcha(process.env.NEXTCAPTCHA_API_KEY!);
 
@@ -94,7 +94,7 @@ console.log(solution.gRecaptchaResponse);
 ### 2. Cloudflare Turnstile
 
 ```ts
-import { turnstileProxylessTask } from "@tysikgg/nextcaptcha";
+import { turnstileProxylessTask } from "nextcaptcha-client";
 
 const solution = await client.solve<{ token: string }>(
   turnstileProxylessTask({
@@ -144,7 +144,7 @@ const token = await client.getToken(
 `createTask` and `getToken` send `softId` as a top-level string, next to `clientKey` and `task`. `getBalance` and `getTaskResult` do not send it. The default is `DEFAULT_SOFT_ID`.
 
 ```ts
-import { NextCaptcha, DEFAULT_SOFT_ID } from "@tysikgg/nextcaptcha";
+import { NextCaptcha, DEFAULT_SOFT_ID } from "nextcaptcha-client";
 
 console.log(DEFAULT_SOFT_ID);
 // next_softId_b3bdc0a2f7035cc72e1d62d575469f449d
@@ -193,7 +193,7 @@ Parameter reference: <https://nextcaptcha.com/apidocs>
 When the API returns `errorId > 0` or an HTTP error, the client throws `NextCaptchaError`:
 
 ```ts
-import { NextCaptcha, NextCaptchaError } from "@tysikgg/nextcaptcha";
+import { NextCaptcha, NextCaptchaError } from "nextcaptcha-client";
 
 try {
   const client = new NextCaptcha("invalid_key");
