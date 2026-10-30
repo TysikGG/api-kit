@@ -1,8 +1,8 @@
-# sms-man
+# smsman-client
 
-[![PyPI version](https://img.shields.io/pypi/v/sms-man.svg)](https://pypi.org/project/sms-man/)
+[![PyPI version](https://img.shields.io/pypi/v/smsman-client.svg)](https://pypi.org/project/smsman-client/)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
-[![Python Version](https://img.shields.io/pypi/pyversions/sms-man.svg)](https://pypi.org/project/sms-man/)
+[![Python Version](https://img.shields.io/pypi/pyversions/smsman-client.svg)](https://pypi.org/project/smsman-client/)
 
 Modern, fully typed Python client library for the [SMS-MAN](https://sms-man.com/site/api) virtual phone numbers and SMS verification API.
 
@@ -22,7 +22,7 @@ Official API documentation: <https://sms-man.com/site/api>
 ## Installation
 
 ```bash
-pip install sms-man
+pip install smsman-client
 ```
 
 Requires Python 3.10 or higher.

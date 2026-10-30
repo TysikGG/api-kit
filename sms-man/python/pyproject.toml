@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sms-man"
+name = "smsman-client"
 version = "0.2.0"
 description = "Python client for the SMS-MAN virtual number and SMS activation API"
 readme = "README.md"
