@@ -1,6 +1,6 @@
 {
   "name": "capmonster-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript client for the CapMonster Cloud captcha recognition API: every documented task type, balance, user-agent, and incorrect-solution reports",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

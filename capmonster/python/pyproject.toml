@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "capmonster-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python client for the CapMonster Cloud captcha recognition API: sync and async, every documented task type, balance, user-agent, and incorrect-solution reports"
 readme = "README.md"
 requires-python = ">=3.10"

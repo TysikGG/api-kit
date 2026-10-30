@@ -1,6 +1,6 @@
 {
   "name": "changenow-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript client for ChangeNOW: partner API v2, legacy v1, anonymous catalogue and v3 quotes, polling, and retries",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "grizzly-sms-client"
-version = "0.1.1"
+version = "0.2.0"
 description = "Python client for the Grizzly SMS activation and partner push API"
 readme = "README.md"
 requires-python = ">=3.10"

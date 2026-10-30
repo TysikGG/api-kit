@@ -1,6 +1,6 @@
 {
   "name": "yescaptcha-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript client for the YesCaptcha recognition API (reCAPTCHA, hCaptcha, Turnstile, FunCaptcha, AWS WAF)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
