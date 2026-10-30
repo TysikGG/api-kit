@@ -1,6 +1,6 @@
 {
   "name": "peak-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript client for the Peak CAPTCHA solving API (Cloudflare Turnstile, 5-second challenge, and AWS WAF)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

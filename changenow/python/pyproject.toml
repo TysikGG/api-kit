@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "changenow-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python client for ChangeNOW: partner API v2, legacy v1, anonymous catalogue and v3 quotes, polling, and retries"
 readme = "README.md"
 requires-python = ">=3.10"

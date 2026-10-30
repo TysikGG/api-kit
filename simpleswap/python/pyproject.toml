@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "simpleswap-client"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python client for the SimpleSwap cryptocurrency exchange API (v3): pairs, estimates, swaps, market rates, and deposit confirmation"
 readme = "README.md"
 requires-python = ">=3.10"

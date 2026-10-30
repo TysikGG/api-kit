@@ -1,6 +1,6 @@
 {
   "name": "nextcaptcha-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript client for the NextCaptcha captcha solving API (reCAPTCHA v2/v3/Enterprise, Turnstile, hCaptcha, FunCaptcha)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "simpleswap-client",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Typed client for the SimpleSwap cryptocurrency exchange API (v3): pairs, estimates, swaps, market rates, and deposit confirmation",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
