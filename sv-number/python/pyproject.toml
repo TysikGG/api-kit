@@ -1,3 +1,4 @@
+# Publish trigger
 # SV Number API client
 [build-system]
 requires = ["hatchling"]
