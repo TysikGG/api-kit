@@ -1,4 +1,4 @@
-# hero-sms
+# hero-sms-client
 
 Python client library for the [HeroSMS](https://hero-sms.com/ru/api) SMS activation and rental API.
 
@@ -14,7 +14,7 @@ Python client library for the [HeroSMS](https://hero-sms.com/ru/api) SMS activat
 ## Installation
 
 ```bash
-pip install hero-sms
+pip install hero-sms-client
 ```
 
 ## Quick Start

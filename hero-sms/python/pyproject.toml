@@ -5,7 +5,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "hero-sms"
+name = "hero-sms-client"
 version = "0.1.0"
 description = "Python client for the HeroSMS activation and rental API"
 readme = "README.md"
